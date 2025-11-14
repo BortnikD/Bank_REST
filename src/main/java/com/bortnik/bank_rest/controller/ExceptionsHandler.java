@@ -1,6 +1,7 @@
 package com.bortnik.bank_rest.controller;
 
 import com.bortnik.bank_rest.dto.ApiError;
+import com.bortnik.bank_rest.exception.card.CardBlocked;
 import com.bortnik.bank_rest.exception.card.CardNotFound;
 import com.bortnik.bank_rest.exception.card.InsufficientFunds;
 import com.bortnik.bank_rest.exception.security.AccessError;
@@ -67,6 +68,15 @@ public class ExceptionsHandler {
         return buildResponseEntity(
                 "Bad Request",
                 badRequestException.getMessage(),
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
+    @ExceptionHandler(CardBlocked.class)
+    ResponseEntity<ApiError> handleCardBlocked(CardBlocked cardBlocked) {
+        return buildResponseEntity(
+                "Card Blocked",
+                cardBlocked.getMessage(),
                 HttpStatus.BAD_REQUEST
         );
     }
