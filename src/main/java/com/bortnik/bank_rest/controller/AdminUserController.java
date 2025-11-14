@@ -1,8 +1,15 @@
 package com.bortnik.bank_rest.controller;
 
+import com.bortnik.bank_rest.dto.ApiError;
 import com.bortnik.bank_rest.dto.user.UserDTO;
 import com.bortnik.bank_rest.security.services.UserDetailsImpl;
 import com.bortnik.bank_rest.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -25,8 +32,20 @@ public class AdminUserController {
 
     private final UserService userService;
 
+    @Operation(
+            summary = "Get paginated list of all users",
+            description = "Returns a paginated list of users. Available only for administrators."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Successful retrieval",
+                    content = @Content(schema = @Schema(implementation = Page.class))
+            ),
+    })
     @GetMapping()
     Page<UserDTO> getAllUsers(
+            @Parameter(description = "Pagination and sorting parameters")
             @PageableDefault(
                     size = 20,
                     page = 0,
@@ -37,24 +56,94 @@ public class AdminUserController {
         return userService.getAllUsers(pageable);
     }
 
+    @Operation(
+            summary = "Get user by ID",
+            description = "Returns detailed information about a user by their UUID."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "User found",
+                    content = @Content(schema = @Schema(implementation = UserDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "User not found",
+                    content = @Content(schema = @Schema(implementation = ApiError.class))
+            )
+    })
     @GetMapping("/{userId}")
-    UserDTO getUserById(@PathVariable UUID userId) {
+    UserDTO getUserById(
+            @Parameter(description = "User UUID", required = true)
+            @PathVariable UUID userId
+    ) {
         return userService.getUserById(userId);
     }
 
+    @Operation(
+            summary = "Get information about current admin",
+            description = "Returns the profile of the authenticated administrator."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "User information retrieved",
+                    content = @Content(schema = @Schema(implementation = UserDTO.class))
+            ),
+    })
     @GetMapping("/who-am-i")
-    UserDTO whoAmI(@AuthenticationPrincipal UserDetailsImpl user) {
+    UserDTO whoAmI(
+            @Parameter(hidden = true)
+            @AuthenticationPrincipal UserDetailsImpl user
+    ) {
         return userService.getUserById(user.getId());
     }
 
+    @Operation(
+            summary = "Grant ADMIN role to user",
+            description = "Promotes a user by assigning them the ADMIN role."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "User promoted",
+                    content = @Content(schema = @Schema(implementation = UserDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "User not found",
+                    content = @Content(schema = @Schema(implementation = ApiError.class))
+            )
+    })
     @PostMapping("/{userId}/make_admin")
-    UserDTO makeAdmin(@PathVariable UUID userId) {
+    UserDTO makeAdmin(
+            @Parameter(description = "User UUID", required = true)
+            @PathVariable UUID userId
+    ) {
         return userService.makeAdmin(userId);
     }
 
+    @Operation(
+            summary = "Delete user",
+            description = "Deletes a user by their UUID."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "User deleted"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "User not found",
+                    content = @Content(schema = @Schema(implementation = ApiError.class))
+            )
+    })
     @DeleteMapping("/{userId}")
-    ResponseEntity<Void> deleteUser(@PathVariable UUID userId) {
+    ResponseEntity<Void> deleteUser(
+            @Parameter(description = "User UUID", required = true)
+            @PathVariable UUID userId
+    ) {
         userService.deleteUser(userId);
-        return ResponseEntity.noContent().build() ;
+        return ResponseEntity.noContent().build();
     }
 }

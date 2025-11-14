@@ -85,4 +85,8 @@ public class UserService {
         userRepository.delete(user);
         UserMapper.toUserDTO(user);
     }
+
+    public boolean existsById(final UUID userId) {
+        return userRepository.existsById(userId);
+    }
 }
