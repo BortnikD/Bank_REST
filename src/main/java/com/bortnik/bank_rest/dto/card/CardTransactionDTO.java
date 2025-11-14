@@ -8,8 +8,8 @@ import java.util.UUID;
 
 @Data
 @Builder
-public class CardDepositDTO {
-    private UUID userId;
-    private String cardNumber;
-    private BigDecimal amount;
+public class CardTransactionDTO {
+    final UUID fromCardId;
+    final UUID toCardId;
+    final BigDecimal amount;
 }

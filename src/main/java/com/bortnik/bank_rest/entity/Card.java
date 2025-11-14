@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -41,6 +42,7 @@ public class Card {
     @Column
     BigDecimal balance;
 
+    @CreationTimestamp
     @Column(name = "created_at")
     LocalDateTime createdAt;
 }

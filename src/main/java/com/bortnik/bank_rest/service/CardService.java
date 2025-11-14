@@ -1,8 +1,10 @@
 package com.bortnik.bank_rest.service;
 
 import com.bortnik.bank_rest.dto.card.CardDTO;
+import com.bortnik.bank_rest.dto.card.CardTransactionDTO;
 import com.bortnik.bank_rest.entity.Card;
 import com.bortnik.bank_rest.entity.CardStatus;
+import com.bortnik.bank_rest.exception.card.CardBlocked;
 import com.bortnik.bank_rest.exception.card.CardNotFound;
 import com.bortnik.bank_rest.exception.card.InsufficientFunds;
 import com.bortnik.bank_rest.exception.security.AccessError;
@@ -44,28 +46,22 @@ public class CardService {
      * Переводит указанную сумму денег между двумя картами, принадлежащими одному и тому же пользователю.
      * Подтверждает, что пользователь владеет обеими картами и что на исходной карте достаточный баланс.
      *
-     * @param userId ID пользователя запросившего карты
-     * @param fromCardId ID исходной карты, с которой будут списаны средства
-     * @param toCardId ID целевой карты, на которую будут зачислены средства
-     * @param amount количество денег для перевода
+     * @param transactionDTO объект, содержащий детали транзакции, включая идентификатор пользователя,
      * @throws InsufficientFunds если на исходной карте недостаточно средств
      */
     @Transactional
-    public void internalTransfer(
-            final UUID userId,
-            final UUID fromCardId,
-            final UUID toCardId,
-            final BigDecimal amount
-    ) {
-        final Card fromCard = getCardOwnedByUser(userId, fromCardId);
-        final Card toCard = getCardOwnedByUser(userId, toCardId);
+    public void internalTransfer(final CardTransactionDTO transactionDTO, final UUID userId) {
+        final Card fromCard = getCardOwnedByUser(userId, transactionDTO.getFromCardId());
+        validateNotBlockCard(fromCard);
+        final Card toCard = getCardOwnedByUser(userId, transactionDTO.getToCardId());
+        validateNotBlockCard(toCard);
 
-        if (amount.compareTo(fromCard.getBalance()) > 0) {
-            throw new InsufficientFunds("Insufficient funds on card " + fromCardId);
+        if (transactionDTO.getAmount().compareTo(fromCard.getBalance()) > 0) {
+            throw new InsufficientFunds("Insufficient funds on card " + transactionDTO.getFromCardId());
         }
 
-        fromCard.setBalance(fromCard.getBalance().subtract(amount));
-        toCard.setBalance(toCard.getBalance().add(amount));
+        fromCard.setBalance(fromCard.getBalance().subtract(transactionDTO.getAmount()));
+        toCard.setBalance(toCard.getBalance().add(transactionDTO.getAmount()));
     }
 
     /**
@@ -82,6 +78,33 @@ public class CardService {
     ) {
         final Card card = getCardOwnedByUser(userId, cardId);
         card.setStatus(CardStatus.BLOCKED);
+        return CardMapper.toCardDTO(card);
+    }
+
+    /**
+     * Получение карты по номеру, пользователем.
+     * Проверяет принадлежность карты пользователю.
+     * @param userId ID пользователя запросившего карту
+     * @param cardId ID карты
+     * @return информация о карте
+     */
+    public CardDTO getUserCardById(
+            final UUID userId,
+            final UUID cardId
+    ) {
+        final Card card = getCardOwnedByUser(userId, cardId);
+        return CardMapper.toCardDTO(card);
+    }
+
+    /**
+     * Получение карты по номеру, администратором.
+     * @param cardId ID карты
+     * @return информация о карте
+     */
+    public CardDTO getCardByIdForAdmin(
+            final UUID cardId
+    ) {
+        final Card card = getCardByNumber(cardId);
         return CardMapper.toCardDTO(card);
     }
 
@@ -111,14 +134,14 @@ public class CardService {
 
     /**
      * Удаление карты по номеру, администратором.
+     *
      * @param cardId номер карты
-     * @return данные удаленной карты
      */
     @Transactional
-    public CardDTO deleteCardByAdmin(final UUID cardId) {
+    public void deleteCardByAdmin(final UUID cardId) {
         final Card card = getCardByNumber(cardId);
         cardRepository.delete(card);
-        return CardMapper.toCardDTO(card);
+        CardMapper.toCardDTO(card);
     }
 
     /**
@@ -130,7 +153,7 @@ public class CardService {
      */
     @Transactional
     public CardDTO createCardForUser(final UUID userId) {
-        final String cardNumber = SimpleCardNumberGenerator.generate();;
+        final String cardNumber = SimpleCardNumberGenerator.generate();
         final String lastFourDigits = cardNumber.substring(cardNumber.length() - 4);
         final String encryptedCardNumber = cardEncryptionService.encrypt(cardNumber);
         final LocalDate expirationDate = LocalDate.now().plusYears(EXPIRATION_YEARS);
@@ -147,6 +170,20 @@ public class CardService {
                                 .build()
                 )
         );
+    }
+
+    /**
+     * Пополнение баланса карты по id, админом.
+     * @param cardId ID карты
+     * @param amount сумма пополнения
+     * @return обновленная информация о карте
+     */
+    @Transactional
+    public CardDTO topUpCardBalance(final UUID cardId, final BigDecimal amount) {
+        final Card card = getCardByNumber(cardId);
+        validateNotBlockCard(card);
+        card.setBalance(card.getBalance().add(amount));
+        return CardMapper.toCardDTO(card);
     }
 
     /**
@@ -190,5 +227,11 @@ public class CardService {
         }
 
         return card;
+    }
+
+    private void validateNotBlockCard(Card card) {
+        if (card.getStatus() == CardStatus.BLOCKED) {
+            throw new CardBlocked("Card with ID " + card.getId() + " is blocked");
+        }
     }
 }

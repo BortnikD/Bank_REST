@@ -4,10 +4,10 @@
 CREATE TABLE users
 (
     id         UUID PRIMARY KEY,
-    role       VARCHAR(20)  NOT NULL,
-    username   VARCHAR(64)  NOT NULL UNIQUE,
-    password   VARCHAR(256) NOT NULL,
-    created_at TIMESTAMP DEFAULT NOW()
+    role       VARCHAR(20)             NOT NULL,
+    username   VARCHAR(64)             NOT NULL UNIQUE,
+    password   VARCHAR(256)            NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW() NOT NULL
 );
 
 CREATE TABLE cards
@@ -19,7 +19,7 @@ CREATE TABLE cards
     status           VARCHAR(20)                                       NOT NULL,
     expiration_date  DATE                                              NOT NULL,
     balance          DECIMAL(19, 4) DEFAULT 0.0 CHECK ( balance >= 0 ) NOT NULL,
-    created_at       TIMESTAMP      DEFAULT NOW()
+    created_at       TIMESTAMP      DEFAULT NOW()                      NOT NULL
 );
 
 CREATE INDEX idx_users_username ON users (username);
