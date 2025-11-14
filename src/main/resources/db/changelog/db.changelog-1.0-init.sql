@@ -12,12 +12,14 @@ CREATE TABLE users
 
 CREATE TABLE cards
 (
-    id              UUID PRIMARY KEY,
-    user_id         UUID REFERENCES users (id) ON DELETE CASCADE NOT NULL,
-    card_number     VARCHAR(16)                                  NOT NULL UNIQUE,
-    status          VARCHAR(20)                                  NOT NULL,
-    expiration_date DATE                                         NOT NULL,
-    created_at      TIMESTAMP DEFAULT NOW()
+    id               UUID PRIMARY KEY,
+    user_id          UUID REFERENCES users (id) ON DELETE CASCADE      NOT NULL,
+    card_number      VARCHAR(500)                                      NOT NULL UNIQUE,
+    last_four_digits VARCHAR(4) CHECK (LENGTH(last_four_digits) = 4)   NOT NULL,
+    status           VARCHAR(20)                                       NOT NULL,
+    expiration_date  DATE                                              NOT NULL,
+    balance          DECIMAL(19, 4) DEFAULT 0.0 CHECK ( balance >= 0 ) NOT NULL,
+    created_at       TIMESTAMP      DEFAULT NOW()
 );
 
 CREATE INDEX idx_users_username ON users (username);

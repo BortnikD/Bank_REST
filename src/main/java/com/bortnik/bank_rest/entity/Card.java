@@ -35,6 +35,9 @@ public class Card {
     @Column(name = "card_number")
     String cardNumber;
 
+    @Column(name = "last_four_digits")
+    String lastFourDigits;
+
     @Column
     BigDecimal balance;
 

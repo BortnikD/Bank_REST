@@ -17,15 +17,4 @@ public final class SimpleCardNumberGenerator {
         }
         return sb.toString();
     }
-
-    /**
-     * Маскирует номер карты, оставляя видимыми только последние четыре цифры.
-     * @param cardNumber номер карты
-     * @return замаскированный номер карты
-     */
-    public static String mask(String cardNumber) {
-        if (cardNumber == null || cardNumber.length() < 4) return cardNumber;
-        String last4 = cardNumber.substring(cardNumber.length() - 4);
-        return "**** **** **** " + last4;
-    }
 }
