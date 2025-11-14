@@ -8,6 +8,7 @@ import com.bortnik.bank_rest.exception.card.CardBlocked;
 import com.bortnik.bank_rest.exception.card.CardNotFound;
 import com.bortnik.bank_rest.exception.card.InsufficientFunds;
 import com.bortnik.bank_rest.exception.security.AccessError;
+import com.bortnik.bank_rest.exception.user.UserNotFound;
 import com.bortnik.bank_rest.repository.CardRepository;
 import com.bortnik.bank_rest.util.SimpleCardNumberGenerator;
 import com.bortnik.bank_rest.util.mappers.CardMapper;
@@ -27,6 +28,7 @@ public class CardService {
 
     private final CardRepository cardRepository;
     private final CardEncryptionService cardEncryptionService;
+    private final UserService userService;
 
     // Срок действия карты в годах
     private final static int EXPIRATION_YEARS = 5;
@@ -38,6 +40,9 @@ public class CardService {
      * @return страница с картами пользователя
      */
     public Page<CardDTO> getAllUserCards(final UUID userId, final Pageable pageable) {
+        if (!userService.existsById(userId)) {
+            throw new UserNotFound("User with ID " + userId + " not found");
+        }
         return cardRepository.findAllByUserId(userId, pageable)
                 .map(CardMapper::toCardDTO);
     }
@@ -153,6 +158,10 @@ public class CardService {
      */
     @Transactional
     public CardDTO createCardForUser(final UUID userId) {
+        if (!userService.existsById(userId)) {
+            throw new UserNotFound("User with ID " + userId + " not found");
+        }
+
         final String cardNumber = SimpleCardNumberGenerator.generate();
         final String lastFourDigits = cardNumber.substring(cardNumber.length() - 4);
         final String encryptedCardNumber = cardEncryptionService.encrypt(cardNumber);
