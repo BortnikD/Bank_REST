@@ -75,6 +75,16 @@ public class UserService {
     }
 
     /**
+     * Получение всех пользователей по роли с пагинацией. Функция для администратора.
+     * @param role роль пользователя
+     * @param pageable параметры пагинации
+     * @return страница с пользователями указанной роли
+     */
+    public Page<UserDTO> getAllUsersByRole(final Role role, final Pageable pageable) {
+        return userRepository.findAllByRole(role, pageable).map(UserMapper::toUserDTO);
+    }
+
+    /**
      * Удаление пользователя по username. Функция для администратора.
      *
      * @param id ID пользователя

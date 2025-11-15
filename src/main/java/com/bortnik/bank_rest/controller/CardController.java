@@ -4,6 +4,7 @@ import com.bortnik.bank_rest.controller.validator.CardValidator;
 import com.bortnik.bank_rest.dto.ApiError;
 import com.bortnik.bank_rest.dto.card.CardDTO;
 import com.bortnik.bank_rest.dto.card.CardTransactionDTO;
+import com.bortnik.bank_rest.entity.CardStatus;
 import com.bortnik.bank_rest.security.services.UserDetailsImpl;
 import com.bortnik.bank_rest.service.CardService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -51,15 +52,22 @@ public class CardController {
     @GetMapping("/my")
     public Page<CardDTO> getAllUserCards(
             @Parameter(hidden = true)
-            @AuthenticationPrincipal UserDetailsImpl userDetailsImpl,
+            @AuthenticationPrincipal
+            UserDetailsImpl userDetailsImpl,
             @Parameter(description = "Pagination and sorting parameters")
             @PageableDefault(
                     size = 20,
                     page = 0,
                     sort = "createdAt",
                     direction = Sort.Direction.DESC
-            ) Pageable pageable
+            ) Pageable pageable,
+            @Parameter(description = "Filter by status")
+            @RequestParam(required = false)
+            CardStatus status
     ) {
+        if (status != null) {
+            return cardService.getCardsByUserIdAndStatus(userDetailsImpl.getId(), status, pageable);
+        }
         return cardService.getAllUserCards(userDetailsImpl.getId(), pageable);
     }
 

@@ -105,6 +105,25 @@ public class CardService {
     }
 
     /**
+     * Получение всех карт пользователя по статусу с пагинацией.
+     * @param userId ID пользователя запросившего карты
+     * @param status статус карты
+     * @param pageable параметры пагинации
+     * @return страница с картами пользователя по статусу
+     */
+    public Page<CardDTO> getCardsByUserIdAndStatus(
+            final UUID userId,
+            final CardStatus status,
+            final Pageable pageable
+    ) {
+        if (!userService.existsById(userId)) {
+            throw new UserNotFound("User with ID " + userId + " not found");
+        }
+        return cardRepository.findByUserIdAndStatus(userId, status, pageable)
+                .map(CardMapper::toCardDTO);
+    }
+
+    /**
      * Получение карты по номеру, администратором.
      * @param cardId ID карты
      * @return информация о карте
@@ -207,6 +226,20 @@ public class CardService {
      */
     public Page<CardDTO> getAllCards(final Pageable pageable) {
         return cardRepository.findAll(pageable)
+                .map(CardMapper::toCardDTO);
+    }
+
+    /**
+     * Получение всех карт по статусу с пагинацией, администратором.
+     * @param status статус карты
+     * @param pageable параметры пагинации
+     * @return страница с картами по статусу
+     */
+    public Page<CardDTO> getAllCardsByStatus(
+            final CardStatus status,
+            final Pageable pageable
+    ) {
+        return cardRepository.findByStatus(status, pageable)
                 .map(CardMapper::toCardDTO);
     }
 

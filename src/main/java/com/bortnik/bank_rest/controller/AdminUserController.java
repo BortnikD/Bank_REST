@@ -2,6 +2,7 @@ package com.bortnik.bank_rest.controller;
 
 import com.bortnik.bank_rest.dto.ApiError;
 import com.bortnik.bank_rest.dto.user.UserDTO;
+import com.bortnik.bank_rest.entity.Role;
 import com.bortnik.bank_rest.security.services.UserDetailsImpl;
 import com.bortnik.bank_rest.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -51,8 +52,14 @@ public class AdminUserController {
                     page = 0,
                     sort = "createdAt",
                     direction = Sort.Direction.DESC
-            ) Pageable pageable
+            ) Pageable pageable,
+            @Parameter(description = "Filter by role")
+            @RequestParam(required = false)
+            Role role
     ) {
+        if (role != null) {
+            return userService.getAllUsersByRole(role, pageable);
+        }
         return userService.getAllUsers(pageable);
     }
 
@@ -115,7 +122,7 @@ public class AdminUserController {
                     content = @Content(schema = @Schema(implementation = ApiError.class))
             )
     })
-    @PostMapping("/{userId}/make_admin")
+    @PostMapping("/{userId}/make-admin")
     UserDTO makeAdmin(
             @Parameter(description = "User UUID", required = true)
             @PathVariable UUID userId

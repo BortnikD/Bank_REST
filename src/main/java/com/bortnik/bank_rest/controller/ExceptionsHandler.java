@@ -1,6 +1,7 @@
 package com.bortnik.bank_rest.controller;
 
 import com.bortnik.bank_rest.dto.ApiError;
+import com.bortnik.bank_rest.exception.BadRequest;
 import com.bortnik.bank_rest.exception.card.CardBlocked;
 import com.bortnik.bank_rest.exception.card.CardExpired;
 import com.bortnik.bank_rest.exception.card.CardNotFound;
@@ -8,11 +9,12 @@ import com.bortnik.bank_rest.exception.card.InsufficientFunds;
 import com.bortnik.bank_rest.exception.security.AccessError;
 import com.bortnik.bank_rest.exception.user.UserAlreadyExists;
 import com.bortnik.bank_rest.exception.user.UserNotFound;
-import org.apache.coyote.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
 
@@ -64,8 +66,8 @@ public class ExceptionsHandler {
         );
     }
 
-    @ExceptionHandler(BadRequestException.class)
-    ResponseEntity<ApiError> handleBadRequestException(BadRequestException badRequestException) {
+    @ExceptionHandler(BadRequest.class)
+    ResponseEntity<ApiError> handleBadRequest(BadRequest badRequestException) {
         return buildResponseEntity(
                 "Bad Request",
                 badRequestException.getMessage(),
@@ -88,6 +90,24 @@ public class ExceptionsHandler {
                 "Card Expired",
                 cardExpired.getMessage(),
                 HttpStatus.BAD_REQUEST
+        );
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    ResponseEntity<ApiError> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException exception) {
+        return buildResponseEntity(
+                "Bad Request",
+                "Invalid parameter: " + exception.getName(),
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    ResponseEntity<ApiError> handleNoResourceFoundException(NoResourceFoundException exception) {
+        return buildResponseEntity(
+                "Resource Not Found",
+                exception.getMessage(),
+                HttpStatus.NOT_FOUND
         );
     }
 

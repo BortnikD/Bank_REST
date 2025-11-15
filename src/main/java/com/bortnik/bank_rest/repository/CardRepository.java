@@ -1,6 +1,7 @@
 package com.bortnik.bank_rest.repository;
 
 import com.bortnik.bank_rest.entity.Card;
+import com.bortnik.bank_rest.entity.CardStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -21,4 +22,8 @@ public interface CardRepository extends JpaRepository<Card, UUID> {
     AND c.status != 'EXPIRED'
 """)
     Stream<Card> findExpiredCards();
+
+    Page<Card> findByUserIdAndStatus(UUID userId, CardStatus status, Pageable pageable);
+
+    Page<Card> findByStatus(CardStatus status, Pageable pageable);
 }

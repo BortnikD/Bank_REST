@@ -3,6 +3,7 @@ package com.bortnik.bank_rest.controller;
 import com.bortnik.bank_rest.controller.validator.CardValidator;
 import com.bortnik.bank_rest.dto.ApiError;
 import com.bortnik.bank_rest.dto.card.CardDTO;
+import com.bortnik.bank_rest.entity.CardStatus;
 import com.bortnik.bank_rest.service.CardService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -48,10 +49,17 @@ public class AdminCardController {
     })
     @GetMapping("/users/{userId}/cards")
     public Page<CardDTO> getUserCards(
-            @Parameter(description = "User ID") @PathVariable UUID userId,
+            @Parameter(description = "User ID")
+            @PathVariable
+            UUID userId,
+            @RequestParam(required = false)
+            CardStatus status,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC)
             Pageable pageable
     ) {
+        if (status != null) {
+            return cardService.getCardsByUserIdAndStatus(userId, status, pageable);
+        }
         return cardService.getAllUserCards(userId, pageable);
     }
 
@@ -86,8 +94,14 @@ public class AdminCardController {
     @GetMapping
     public Page<CardDTO> getAllCards(
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC)
-            Pageable pageable
+            Pageable pageable,
+            @Parameter(description = "Filter by status")
+            @RequestParam(required = false)
+            CardStatus status
     ) {
+        if (status != null) {
+            return cardService.getAllCardsByStatus(status, pageable);
+        }
         return cardService.getAllCards(pageable);
     }
 
