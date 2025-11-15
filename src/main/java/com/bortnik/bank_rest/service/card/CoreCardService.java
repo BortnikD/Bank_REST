@@ -5,7 +5,6 @@ import com.bortnik.bank_rest.entity.Card;
 import com.bortnik.bank_rest.entity.CardStatus;
 import com.bortnik.bank_rest.exception.card.CardBlocked;
 import com.bortnik.bank_rest.exception.card.CardExpired;
-import com.bortnik.bank_rest.exception.card.CardNotFound;
 import com.bortnik.bank_rest.exception.user.UserNotFound;
 import com.bortnik.bank_rest.repository.CardRepository;
 import com.bortnik.bank_rest.service.UserService;
@@ -59,17 +58,6 @@ public class CoreCardService {
         }
         return cardRepository.findByUserIdAndStatus(userId, status, pageable)
                 .map(CardMapper::toCardDTO);
-    }
-
-    /**
-     * Получение карты по номеру.
-     * @param cardId ID карты
-     * @return информация о карте
-     * @throws CardNotFound если карта не найдена
-     */
-    public Card getCardById(final UUID cardId) {
-        return cardRepository.findById(cardId)
-                .orElseThrow(() -> new CardNotFound("Card with number " + cardId + " not found"));
     }
 
     /**

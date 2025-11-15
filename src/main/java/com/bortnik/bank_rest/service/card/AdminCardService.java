@@ -3,6 +3,7 @@ package com.bortnik.bank_rest.service.card;
 import com.bortnik.bank_rest.dto.card.CardDTO;
 import com.bortnik.bank_rest.entity.Card;
 import com.bortnik.bank_rest.entity.CardStatus;
+import com.bortnik.bank_rest.exception.card.CardNotFound;
 import com.bortnik.bank_rest.exception.user.UserNotFound;
 import com.bortnik.bank_rest.repository.CardRepository;
 import com.bortnik.bank_rest.service.UserService;
@@ -89,7 +90,7 @@ public class AdminCardService {
      * @return информация о карте
      */
     public CardDTO getCardById(final UUID cardId) {
-        final Card card = coreCardService.getCardById(cardId);
+        final Card card = getCardEntityById(cardId);
         return CardMapper.toCardDTO(card);
     }
 
@@ -100,7 +101,7 @@ public class AdminCardService {
      */
     @Transactional
     public CardDTO blockCard(final UUID cardId) {
-        final Card card = coreCardService.getCardById(cardId);
+        final Card card = getCardEntityById(cardId);
         card.setStatus(CardStatus.BLOCKED);
         card.setUpdatedAt(LocalDateTime.now());
         return CardMapper.toCardDTO(card);
@@ -113,7 +114,7 @@ public class AdminCardService {
      */
     @Transactional
     public CardDTO activateCard(final UUID cardId) {
-        final Card card = coreCardService.getCardById(cardId);
+        final Card card = getCardEntityById(cardId);
         card.setStatus(CardStatus.ACTIVE);
         card.setUpdatedAt(LocalDateTime.now());
         return CardMapper.toCardDTO(card);
@@ -126,7 +127,7 @@ public class AdminCardService {
      */
     @Transactional
     public void deleteCard(final UUID cardId) {
-        final Card card = coreCardService.getCardById(cardId);
+        final Card card = getCardEntityById(cardId);
         cardRepository.delete(card);
         CardMapper.toCardDTO(card);
     }
@@ -171,9 +172,21 @@ public class AdminCardService {
      */
     @Transactional
     public CardDTO topUpCardBalance(final UUID cardId, final BigDecimal amount) {
-        final Card card = coreCardService.getCardById(cardId);
+        final Card card = getCardEntityById(cardId);
         coreCardService.validateActiveCard(card);
         card.setBalance(card.getBalance().add(amount));
         return CardMapper.toCardDTO(card);
     }
+
+    /**
+     * Получение карты по номеру.
+     * @param cardId ID карты
+     * @return информация о карте
+     * @throws CardNotFound если карта не найдена
+     */
+    private Card getCardEntityById(final UUID cardId) {
+        return cardRepository.findById(cardId)
+                .orElseThrow(() -> new CardNotFound("Card with number " + cardId + " not found"));
+    }
+
 }
