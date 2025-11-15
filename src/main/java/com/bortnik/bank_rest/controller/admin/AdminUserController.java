@@ -1,4 +1,4 @@
-package com.bortnik.bank_rest.controller;
+package com.bortnik.bank_rest.controller.admin;
 
 import com.bortnik.bank_rest.dto.ApiError;
 import com.bortnik.bank_rest.dto.user.UserDTO;

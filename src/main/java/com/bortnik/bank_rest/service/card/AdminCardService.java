@@ -7,6 +7,7 @@ import com.bortnik.bank_rest.exception.card.CardNotFound;
 import com.bortnik.bank_rest.exception.user.UserNotFound;
 import com.bortnik.bank_rest.repository.CardRepository;
 import com.bortnik.bank_rest.service.UserService;
+import com.bortnik.bank_rest.security.card_encryption.CardEncryptionService;
 import com.bortnik.bank_rest.util.SimpleCardNumberGenerator;
 import com.bortnik.bank_rest.util.mappers.CardMapper;
 import jakarta.transaction.Transactional;
@@ -129,7 +130,6 @@ public class AdminCardService {
     public void deleteCard(final UUID cardId) {
         final Card card = getCardEntityById(cardId);
         cardRepository.delete(card);
-        CardMapper.toCardDTO(card);
     }
 
     /**

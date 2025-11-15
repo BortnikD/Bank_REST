@@ -1,4 +1,4 @@
-package com.bortnik.bank_rest.service.card;
+package com.bortnik.bank_rest.security.card_encryption;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
