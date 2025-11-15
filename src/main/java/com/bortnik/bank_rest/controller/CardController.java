@@ -144,6 +144,7 @@ public class CardController {
             @RequestBody CardTransactionDTO transactionDTO
     ) {
         CardValidator.validateAmountPositive(transactionDTO.getAmount());
+        CardValidator.validateDifferentCards(transactionDTO.getFromCardId(), transactionDTO.getToCardId());
         userCardService.internalTransfer(transactionDTO, userDetailsImpl.getId());
         return ResponseEntity.ok().build();
     }
