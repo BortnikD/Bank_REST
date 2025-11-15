@@ -42,6 +42,11 @@ public class AdminCardController {
                     description = "Cards successfully retrieved"
             ),
             @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content(schema = @Schema(implementation = ApiError.class))
+            ),
+            @ApiResponse(
                     responseCode = "404",
                     description = "User not found",
                     content = @Content(schema = @Schema(implementation = ApiError.class))
@@ -71,6 +76,11 @@ public class AdminCardController {
                     description = "Card found"
             ),
             @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content(schema = @Schema(implementation = ApiError.class))
+            ),
+            @ApiResponse(
                     responseCode = "404",
                     description = "Card not found",
                     content = @Content(schema = @Schema(implementation = ApiError.class))
@@ -89,6 +99,11 @@ public class AdminCardController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Cards successfully retrieved"
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content(schema = @Schema(implementation = ApiError.class))
             )
     })
     @GetMapping
@@ -113,6 +128,11 @@ public class AdminCardController {
                     description = "Card successfully blocked"
             ),
             @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content(schema = @Schema(implementation = ApiError.class))
+            ),
+            @ApiResponse(
                     responseCode = "404",
                     description = "Card not found",
                     content = @Content(schema = @Schema(implementation = ApiError.class))
@@ -131,6 +151,11 @@ public class AdminCardController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Card successfully activated"),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content(schema = @Schema(implementation = ApiError.class))
+            ),
             @ApiResponse(
                     responseCode = "404",
                     description = "Card not found",
@@ -152,6 +177,11 @@ public class AdminCardController {
                     description = "Card deleted"
             ),
             @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content(schema = @Schema(implementation = ApiError.class))
+            ),
+            @ApiResponse(
                     responseCode = "404", description = "Card not found",
                     content = @Content(schema = @Schema(implementation = ApiError.class))
             )
@@ -171,6 +201,11 @@ public class AdminCardController {
                     responseCode = "201",
                     description = "Card created successfully",
                     content = @Content(schema = @Schema(implementation = CardDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content(schema = @Schema(implementation = ApiError.class))
             ),
             @ApiResponse(responseCode = "404",
                     description = "User not found",
@@ -194,6 +229,11 @@ public class AdminCardController {
             ),
             @ApiResponse(
                     responseCode = "400", description = "Invalid top-up amount",
+                    content = @Content(schema = @Schema(implementation = ApiError.class))
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
                     content = @Content(schema = @Schema(implementation = ApiError.class))
             ),
             @ApiResponse(

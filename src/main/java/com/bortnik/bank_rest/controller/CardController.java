@@ -80,16 +80,19 @@ public class CardController {
                     description = "Card found",
                     content = @Content(schema = @Schema(implementation = CardDTO.class))),
             @ApiResponse(
-                    responseCode = "404",
-                    description = "Card not found",
-                    content = @Content(schema = @Schema(implementation = ApiError.class))
-
-            ),
-            @ApiResponse(
                     responseCode = "401",
                     description = "Unauthorized",
                     content = @Content(schema = @Schema(implementation = ApiError.class))
-
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Card not found",
+                    content = @Content(schema = @Schema(implementation = ApiError.class))
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Access conflict",
+                    content = @Content(schema = @Schema(implementation = ApiError.class))
             )
     })
     @GetMapping("/{cardId}")
@@ -118,13 +121,18 @@ public class CardController {
                     content = @Content(schema = @Schema(implementation = ApiError.class))
             ),
             @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content(schema = @Schema(implementation = ApiError.class))
+            ),
+            @ApiResponse(
                     responseCode = "404",
                     description = "Card not found",
                     content = @Content(schema = @Schema(implementation = ApiError.class))
             ),
             @ApiResponse(
-                    responseCode = "401",
-                    description = "Unauthorized",
+                    responseCode = "409",
+                    description = "Access conflict",
                     content = @Content(schema = @Schema(implementation = ApiError.class))
             )
     })
@@ -150,13 +158,18 @@ public class CardController {
                     description = "Card blocked successfully",
                     content = @Content(schema = @Schema(implementation = CardDTO.class))),
             @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content(schema = @Schema(implementation = ApiError.class))
+            ),
+            @ApiResponse(
                     responseCode = "404",
                     description = "Card not found",
                     content = @Content(schema = @Schema(implementation = ApiError.class))
             ),
             @ApiResponse(
-                    responseCode = "401",
-                    description = "Unauthorized",
+                    responseCode = "409",
+                    description = "Access conflict",
                     content = @Content(schema = @Schema(implementation = ApiError.class))
             )
     })

@@ -43,13 +43,17 @@ public class AdminUserController {
                     description = "Successful retrieval",
                     content = @Content(schema = @Schema(implementation = Page.class))
             ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content(schema = @Schema(implementation = ApiError.class))
+            )
     })
     @GetMapping()
     Page<UserDTO> getAllUsers(
             @Parameter(description = "Pagination and sorting parameters")
             @PageableDefault(
                     size = 20,
-                    page = 0,
                     sort = "createdAt",
                     direction = Sort.Direction.DESC
             ) Pageable pageable,
@@ -72,6 +76,11 @@ public class AdminUserController {
                     responseCode = "200",
                     description = "User found",
                     content = @Content(schema = @Schema(implementation = UserDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content(schema = @Schema(implementation = ApiError.class))
             ),
             @ApiResponse(
                     responseCode = "404",
@@ -97,6 +106,11 @@ public class AdminUserController {
                     description = "User information retrieved",
                     content = @Content(schema = @Schema(implementation = UserDTO.class))
             ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content(schema = @Schema(implementation = ApiError.class))
+            )
     })
     @GetMapping("/who-am-i")
     UserDTO whoAmI(
@@ -115,6 +129,11 @@ public class AdminUserController {
                     responseCode = "200",
                     description = "User promoted",
                     content = @Content(schema = @Schema(implementation = UserDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content(schema = @Schema(implementation = ApiError.class))
             ),
             @ApiResponse(
                     responseCode = "404",
@@ -138,6 +157,11 @@ public class AdminUserController {
             @ApiResponse(
                     responseCode = "204",
                     description = "User deleted"
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content(schema = @Schema(implementation = ApiError.class))
             ),
             @ApiResponse(
                     responseCode = "404",
