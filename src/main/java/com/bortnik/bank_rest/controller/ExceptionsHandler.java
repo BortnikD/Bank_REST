@@ -80,7 +80,7 @@ public class ExceptionsHandler {
         return buildResponseEntity(
                 "Card Blocked",
                 cardBlocked.getMessage(),
-                HttpStatus.BAD_REQUEST
+                HttpStatus.FORBIDDEN
         );
     }
 
@@ -89,7 +89,7 @@ public class ExceptionsHandler {
         return buildResponseEntity(
                 "Card Expired",
                 cardExpired.getMessage(),
-                HttpStatus.BAD_REQUEST
+                HttpStatus.FORBIDDEN
         );
     }
 
