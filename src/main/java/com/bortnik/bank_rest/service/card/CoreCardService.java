@@ -25,8 +25,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class CoreCardService {
 
-    protected final CardRepository cardRepository;
-    protected final UserService userService;
+    public final CardRepository cardRepository;
+    public final UserService userService;
 
     /**
      * Получение всех карт пользователя с пагинацией.
@@ -34,7 +34,7 @@ public class CoreCardService {
      * @param pageable параметры пагинации
      * @return страница с картами пользователя
      */
-    protected Page<CardDTO> findAllUserCards(final UUID userId, final Pageable pageable) {
+    public Page<CardDTO> findAllUserCards(final UUID userId, final Pageable pageable) {
         if (!userService.existsById(userId)) {
             throw new UserNotFound("User with ID " + userId + " not found");
         }
@@ -49,7 +49,7 @@ public class CoreCardService {
      * @param pageable параметры пагинации
      * @return страница с картами пользователя по статусу
      */
-    protected Page<CardDTO> findCardsByUserIdAndStatus(
+    public Page<CardDTO> findCardsByUserIdAndStatus(
             final UUID userId,
             final CardStatus status,
             final Pageable pageable
@@ -67,7 +67,7 @@ public class CoreCardService {
      * @return информация о карте
      * @throws CardNotFound если карта не найдена
      */
-    protected Card getCardById(final UUID cardId) {
+    public Card getCardById(final UUID cardId) {
         return cardRepository.findById(cardId)
                 .orElseThrow(() -> new CardNotFound("Card with number " + cardId + " not found"));
     }
@@ -78,7 +78,7 @@ public class CoreCardService {
      * @throws CardBlocked если карта заблокирована
      * @throws CardExpired если карта истекла
      */
-    protected void validateActiveCard(Card card) {
+    public void validateActiveCard(Card card) {
         if (card.getStatus() == CardStatus.BLOCKED) {
             throw new CardBlocked("Card with ID " + card.getId() + " is blocked");
         }
