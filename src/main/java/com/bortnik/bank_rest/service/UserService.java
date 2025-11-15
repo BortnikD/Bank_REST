@@ -95,7 +95,6 @@ public class UserService {
         final User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFound("User with id " + id + " not found"));
         userRepository.delete(user);
-        UserMapper.toUserDTO(user);
     }
 
     public boolean existsById(final UUID userId) {
