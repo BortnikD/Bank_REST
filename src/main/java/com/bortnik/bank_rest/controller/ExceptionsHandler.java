@@ -2,6 +2,7 @@ package com.bortnik.bank_rest.controller;
 
 import com.bortnik.bank_rest.dto.ApiError;
 import com.bortnik.bank_rest.exception.card.CardBlocked;
+import com.bortnik.bank_rest.exception.card.CardExpired;
 import com.bortnik.bank_rest.exception.card.CardNotFound;
 import com.bortnik.bank_rest.exception.card.InsufficientFunds;
 import com.bortnik.bank_rest.exception.security.AccessError;
@@ -77,6 +78,15 @@ public class ExceptionsHandler {
         return buildResponseEntity(
                 "Card Blocked",
                 cardBlocked.getMessage(),
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
+    @ExceptionHandler(CardExpired.class)
+    ResponseEntity<ApiError> handleCardExpired(CardExpired cardExpired) {
+        return buildResponseEntity(
+                "Card Expired",
+                cardExpired.getMessage(),
                 HttpStatus.BAD_REQUEST
         );
     }
