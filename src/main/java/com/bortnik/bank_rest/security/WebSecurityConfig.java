@@ -1,5 +1,6 @@
 package com.bortnik.bank_rest.security;
 
+import com.bortnik.bank_rest.security.jwt.AuthEntryPointJwt;
 import com.bortnik.bank_rest.security.jwt.JwtAuthorizationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -22,6 +23,7 @@ public class WebSecurityConfig {
 
     private final UserDetailsService userDetailsService;
     private final JwtAuthorizationFilter jwtAuthorizationFilter;
+    private final AuthEntryPointJwt unauthorizedHandler;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -46,6 +48,8 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
+                .exceptionHandling(exception ->
+                        exception.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth ->
