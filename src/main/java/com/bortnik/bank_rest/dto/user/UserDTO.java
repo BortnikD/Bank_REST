@@ -14,4 +14,5 @@ public class UserDTO {
     private String username;
     private Role role;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

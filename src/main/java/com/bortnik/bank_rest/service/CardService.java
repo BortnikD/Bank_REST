@@ -5,6 +5,7 @@ import com.bortnik.bank_rest.dto.card.CardTransactionDTO;
 import com.bortnik.bank_rest.entity.Card;
 import com.bortnik.bank_rest.entity.CardStatus;
 import com.bortnik.bank_rest.exception.card.CardBlocked;
+import com.bortnik.bank_rest.exception.card.CardExpired;
 import com.bortnik.bank_rest.exception.card.CardNotFound;
 import com.bortnik.bank_rest.exception.card.InsufficientFunds;
 import com.bortnik.bank_rest.exception.security.AccessError;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -57,9 +59,9 @@ public class CardService {
     @Transactional
     public void internalTransfer(final CardTransactionDTO transactionDTO, final UUID userId) {
         final Card fromCard = getCardOwnedByUser(userId, transactionDTO.getFromCardId());
-        validateNotBlockCard(fromCard);
+        validateActiveCard(fromCard);
         final Card toCard = getCardOwnedByUser(userId, transactionDTO.getToCardId());
-        validateNotBlockCard(toCard);
+        validateActiveCard(toCard);
 
         if (transactionDTO.getAmount().compareTo(fromCard.getBalance()) > 0) {
             throw new InsufficientFunds("Insufficient funds on card " + transactionDTO.getFromCardId());
@@ -83,6 +85,7 @@ public class CardService {
     ) {
         final Card card = getCardOwnedByUser(userId, cardId);
         card.setStatus(CardStatus.BLOCKED);
+        card.setUpdatedAt(LocalDateTime.now());
         return CardMapper.toCardDTO(card);
     }
 
@@ -122,6 +125,7 @@ public class CardService {
     public CardDTO blockCardByAdmin(final UUID cardId) {
         final Card card = getCardByNumber(cardId);
         card.setStatus(CardStatus.BLOCKED);
+        card.setUpdatedAt(LocalDateTime.now());
         return CardMapper.toCardDTO(card);
     }
 
@@ -134,6 +138,7 @@ public class CardService {
     public CardDTO activateCardByAdmin(final UUID cardId) {
         final Card card = getCardByNumber(cardId);
         card.setStatus(CardStatus.ACTIVE);
+        card.setUpdatedAt(LocalDateTime.now());
         return CardMapper.toCardDTO(card);
     }
 
@@ -190,7 +195,7 @@ public class CardService {
     @Transactional
     public CardDTO topUpCardBalance(final UUID cardId, final BigDecimal amount) {
         final Card card = getCardByNumber(cardId);
-        validateNotBlockCard(card);
+        validateActiveCard(card);
         card.setBalance(card.getBalance().add(amount));
         return CardMapper.toCardDTO(card);
     }
@@ -238,9 +243,12 @@ public class CardService {
         return card;
     }
 
-    private void validateNotBlockCard(Card card) {
+    private void validateActiveCard(Card card) {
         if (card.getStatus() == CardStatus.BLOCKED) {
             throw new CardBlocked("Card with ID " + card.getId() + " is blocked");
+        }
+        else if (card.getStatus() == CardStatus.EXPIRED) {
+            throw new CardExpired("Card with ID " + card.getId() + " is expired");
         }
     }
 }

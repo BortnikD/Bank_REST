@@ -13,6 +13,7 @@ public class CardMapper {
                 .status(card.getStatus())
                 .balance(card.getBalance())
                 .createdAt(card.getCreatedAt())
+                .updatedAt(card.getUpdatedAt())
                 .build();
     }
 }

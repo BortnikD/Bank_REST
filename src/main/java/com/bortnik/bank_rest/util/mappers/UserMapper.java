@@ -10,6 +10,7 @@ public class UserMapper {
                 .role(user.getRole())
                 .username(user.getUsername())
                 .createdAt(user.getCreatedAt())
+                .updatedAt(user.getUpdatedAt())
                 .build();
     }
 }

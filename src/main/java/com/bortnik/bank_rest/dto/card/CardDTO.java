@@ -19,4 +19,5 @@ public class CardDTO {
     private CardStatus status;
     private BigDecimal balance;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

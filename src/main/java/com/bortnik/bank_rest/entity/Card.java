@@ -31,6 +31,7 @@ public class Card {
     LocalDate expirationDate;
 
     @Column
+    @Enumerated(EnumType.STRING)
     CardStatus status;
 
     @Column(name = "card_number")
@@ -45,4 +46,7 @@ public class Card {
     @CreationTimestamp
     @Column(name = "created_at")
     LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    LocalDateTime updatedAt;
 }

@@ -23,6 +23,7 @@ public class User {
     UUID id;
 
     @Column
+    @Enumerated(EnumType.STRING)
     Role role;
 
     @Column
@@ -34,4 +35,7 @@ public class User {
     @CreationTimestamp
     @Column(name = "created_at")
     LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    LocalDateTime updatedAt;
 }

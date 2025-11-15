@@ -14,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -60,6 +61,7 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFound("User with id " + userId + " not found"));
         user.setRole(Role.ADMIN);
+        user.setUpdatedAt(LocalDateTime.now());
         return UserMapper.toUserDTO(userRepository.save(user));
     }
 

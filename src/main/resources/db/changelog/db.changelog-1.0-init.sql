@@ -4,10 +4,11 @@
 CREATE TABLE users
 (
     id         UUID PRIMARY KEY,
-    role       VARCHAR(20)             NOT NULL,
+    role       VARCHAR(20)             NOT NULL CHECK (role IN ('ADMIN', 'USER')),
     username   VARCHAR(64)             NOT NULL UNIQUE,
     password   VARCHAR(256)            NOT NULL,
-    created_at TIMESTAMP DEFAULT NOW() NOT NULL
+    created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+    updated_at TIMESTAMP
 );
 
 CREATE TABLE cards
@@ -16,10 +17,11 @@ CREATE TABLE cards
     user_id          UUID REFERENCES users (id) ON DELETE CASCADE      NOT NULL,
     card_number      VARCHAR(500)                                      NOT NULL UNIQUE,
     last_four_digits VARCHAR(4) CHECK (LENGTH(last_four_digits) = 4)   NOT NULL,
-    status           VARCHAR(20)                                       NOT NULL,
+    status           VARCHAR(20)                                       NOT NULL CHECK (status IN ('ACTIVE', 'BLOCKED', 'EXPIRED')),
     expiration_date  DATE                                              NOT NULL,
     balance          DECIMAL(19, 4) DEFAULT 0.0 CHECK ( balance >= 0 ) NOT NULL,
-    created_at       TIMESTAMP      DEFAULT NOW()                      NOT NULL
+    created_at       TIMESTAMP      DEFAULT NOW()                      NOT NULL,
+    updated_at TIMESTAMP
 );
 
 CREATE INDEX idx_users_username ON users (username);
