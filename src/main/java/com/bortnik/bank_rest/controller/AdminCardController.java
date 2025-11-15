@@ -4,7 +4,7 @@ import com.bortnik.bank_rest.controller.validator.CardValidator;
 import com.bortnik.bank_rest.dto.ApiError;
 import com.bortnik.bank_rest.dto.card.CardDTO;
 import com.bortnik.bank_rest.entity.CardStatus;
-import com.bortnik.bank_rest.service.CardService;
+import com.bortnik.bank_rest.service.card.AdminCardService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -32,7 +32,7 @@ import java.util.UUID;
 @Tag(name = "Admin — Cards", description = "Card management endpoints for administrators")
 public class AdminCardController {
 
-    private final CardService cardService;
+    private final AdminCardService adminCardService;
 
 
     @Operation(summary = "Get user's cards", description = "Returns a paginated list of cards belonging to the specified user")
@@ -58,9 +58,9 @@ public class AdminCardController {
             Pageable pageable
     ) {
         if (status != null) {
-            return cardService.getCardsByUserIdAndStatus(userId, status, pageable);
+            return adminCardService.getCardsByUserIdAndStatus(userId, status, pageable);
         }
-        return cardService.getAllUserCards(userId, pageable);
+        return adminCardService.getAllUserCards(userId, pageable);
     }
 
 
@@ -80,7 +80,7 @@ public class AdminCardController {
     public CardDTO getUserCardById(
             @Parameter(description = "Card ID") @PathVariable UUID cardId
     ) {
-        return cardService.getCardByIdForAdmin(cardId);
+        return adminCardService.getCardById(cardId);
     }
 
 
@@ -100,9 +100,9 @@ public class AdminCardController {
             CardStatus status
     ) {
         if (status != null) {
-            return cardService.getAllCardsByStatus(status, pageable);
+            return adminCardService.getAllCardsByStatus(status, pageable);
         }
-        return cardService.getAllCards(pageable);
+        return adminCardService.getAllCards(pageable);
     }
 
 
@@ -122,7 +122,7 @@ public class AdminCardController {
     public CardDTO blockUserCard(
             @Parameter(description = "Card ID to block") @PathVariable UUID cardId
     ) {
-        return cardService.blockCardByAdmin(cardId);
+        return adminCardService.blockCard(cardId);
     }
 
 
@@ -141,7 +141,7 @@ public class AdminCardController {
     public CardDTO activateUserCard(
             @Parameter(description = "Card ID to activate") @PathVariable UUID cardId
     ) {
-        return cardService.activateCardByAdmin(cardId);
+        return adminCardService.activateCard(cardId);
     }
 
 
@@ -160,7 +160,7 @@ public class AdminCardController {
     public ResponseEntity<Void> deleteUserCard(
             @Parameter(description = "Card ID to delete") @PathVariable UUID cardId
     ) {
-        cardService.deleteCardByAdmin(cardId);
+        adminCardService.deleteCard(cardId);
         return ResponseEntity.noContent().build();
     }
 
@@ -181,7 +181,7 @@ public class AdminCardController {
     public ResponseEntity<CardDTO> createUserCard(
             @Parameter(description = "User ID to associate with the new card") @RequestParam UUID userId
     ) {
-        final CardDTO card = cardService.createCardForUser(userId);
+        final CardDTO card = adminCardService.createCardForUser(userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(card);
     }
 
@@ -207,6 +207,6 @@ public class AdminCardController {
             @Parameter(description = "Amount to top up") @RequestParam BigDecimal amount
     ) {
         CardValidator.validateAmountPositive(amount);
-        return cardService.topUpCardBalance(cardId, amount);
+        return adminCardService.topUpCardBalance(cardId, amount);
     }
 }

@@ -6,7 +6,7 @@ import com.bortnik.bank_rest.dto.card.CardDTO;
 import com.bortnik.bank_rest.dto.card.CardTransactionDTO;
 import com.bortnik.bank_rest.entity.CardStatus;
 import com.bortnik.bank_rest.security.services.UserDetailsImpl;
-import com.bortnik.bank_rest.service.CardService;
+import com.bortnik.bank_rest.service.card.UserCardService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -31,7 +31,7 @@ import java.util.UUID;
 @Tag(name = "Cards", description = "Endpoints for managing user cards and transactions")
 public class CardController {
 
-    private final CardService cardService;
+    private final UserCardService userCardService;
 
     @Operation(
             summary = "Get all cards of the authenticated user",
@@ -57,7 +57,6 @@ public class CardController {
             @Parameter(description = "Pagination and sorting parameters")
             @PageableDefault(
                     size = 20,
-                    page = 0,
                     sort = "createdAt",
                     direction = Sort.Direction.DESC
             ) Pageable pageable,
@@ -66,9 +65,9 @@ public class CardController {
             CardStatus status
     ) {
         if (status != null) {
-            return cardService.getCardsByUserIdAndStatus(userDetailsImpl.getId(), status, pageable);
+            return userCardService.getCardsByUserIdAndStatus(userDetailsImpl.getId(), status, pageable);
         }
-        return cardService.getAllUserCards(userDetailsImpl.getId(), pageable);
+        return userCardService.getAllUserCards(userDetailsImpl.getId(), pageable);
     }
 
     @Operation(
@@ -100,7 +99,7 @@ public class CardController {
             @Parameter(description = "Card UUID", required = true)
             @PathVariable UUID cardId
     ) {
-        return cardService.getUserCardById(userDetailsImpl.getId(), cardId);
+        return userCardService.getUserCardById(userDetailsImpl.getId(), cardId);
     }
 
     @Operation(
@@ -137,7 +136,7 @@ public class CardController {
             @RequestBody CardTransactionDTO transactionDTO
     ) {
         CardValidator.validateAmountPositive(transactionDTO.getAmount());
-        cardService.internalTransfer(transactionDTO, userDetailsImpl.getId());
+        userCardService.internalTransfer(transactionDTO, userDetailsImpl.getId());
         return ResponseEntity.ok().build();
     }
 
@@ -168,6 +167,6 @@ public class CardController {
             @Parameter(description = "Card UUID", required = true)
             @PathVariable UUID cardId
     ) {
-        return cardService.blockCard(userDetailsImpl.getId(), cardId);
+        return userCardService.blockCard(userDetailsImpl.getId(), cardId);
     }
 }
