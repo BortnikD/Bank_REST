@@ -46,6 +46,8 @@ dependencies {
 
     // Documentation
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13")
+
+    testImplementation("io.mockk:mockk:1.13.9")
 }
 
 tasks.withType<Test> {
