@@ -1,4 +1,4 @@
-package com.bortnik.bank_rest.controller.user;
+package com.bortnik.bank_rest.controller;
 
 import com.bortnik.bank_rest.controller.validator.UserValidator;
 import com.bortnik.bank_rest.dto.ApiError;

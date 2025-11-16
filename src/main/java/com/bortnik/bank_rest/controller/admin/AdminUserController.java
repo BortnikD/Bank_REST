@@ -3,7 +3,6 @@ package com.bortnik.bank_rest.controller.admin;
 import com.bortnik.bank_rest.dto.ApiError;
 import com.bortnik.bank_rest.dto.user.UserDTO;
 import com.bortnik.bank_rest.entity.Role;
-import com.bortnik.bank_rest.security.services.UserDetailsImpl;
 import com.bortnik.bank_rest.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -19,7 +18,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -94,30 +92,6 @@ public class AdminUserController {
             @PathVariable UUID userId
     ) {
         return userService.getUserById(userId);
-    }
-
-    @Operation(
-            summary = "Get information about current admin",
-            description = "Returns the profile of the authenticated administrator."
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "User information retrieved",
-                    content = @Content(schema = @Schema(implementation = UserDTO.class))
-            ),
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "Unauthorized",
-                    content = @Content(schema = @Schema(implementation = ApiError.class))
-            )
-    })
-    @GetMapping("/who-am-i")
-    UserDTO whoAmI(
-            @Parameter(hidden = true)
-            @AuthenticationPrincipal UserDetailsImpl user
-    ) {
-        return userService.getUserById(user.getId());
     }
 
     @Operation(
