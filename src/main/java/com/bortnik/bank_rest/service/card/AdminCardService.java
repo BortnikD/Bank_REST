@@ -186,7 +186,7 @@ public class AdminCardService {
      */
     private Card getCardEntityById(final UUID cardId) {
         return cardRepository.findById(cardId)
-                .orElseThrow(() -> new CardNotFound("Card with number " + cardId + " not found"));
+                .orElseThrow(() -> new CardNotFound("Card with id " + cardId + " not found"));
     }
 
 }

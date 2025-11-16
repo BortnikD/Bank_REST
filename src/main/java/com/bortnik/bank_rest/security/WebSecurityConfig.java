@@ -1,6 +1,7 @@
 package com.bortnik.bank_rest.security;
 
-import com.bortnik.bank_rest.security.jwt.AuthEntryPointJwt;
+import com.bortnik.bank_rest.security.jwt.CustomAuthenticationEntryPoint;
+import com.bortnik.bank_rest.security.jwt.CustomAccessDeniedHandler;
 import com.bortnik.bank_rest.security.jwt.JwtAuthorizationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -23,7 +24,8 @@ public class WebSecurityConfig {
 
     private final UserDetailsService userDetailsService;
     private final JwtAuthorizationFilter jwtAuthorizationFilter;
-    private final AuthEntryPointJwt unauthorizedHandler;
+    private final CustomAuthenticationEntryPoint authenticationEntryPoint;
+    private final CustomAccessDeniedHandler accessDeniedHandler;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -49,7 +51,10 @@ public class WebSecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .exceptionHandling(exception ->
-                        exception.authenticationEntryPoint(unauthorizedHandler))
+                        exception.authenticationEntryPoint(authenticationEntryPoint)
+                                .accessDeniedHandler(accessDeniedHandler)
+                )
+
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth ->
@@ -62,8 +67,8 @@ public class WebSecurityConfig {
                                         "/webjars/**",
                                         "/api/auth/**"
                                 ).permitAll()
-                                .requestMatchers("/api/**").hasAnyRole("USER","ADMIN")
                                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                                .requestMatchers("/api/**").hasAnyRole("USER","ADMIN")
                                 .anyRequest().authenticated()
                 );
 
