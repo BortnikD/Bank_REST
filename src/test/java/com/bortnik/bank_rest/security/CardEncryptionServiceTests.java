@@ -1,4 +1,4 @@
-package com.bortnik.bank_rest.service.card;
+package com.bortnik.bank_rest.security;
 
 import com.bortnik.bank_rest.security.card_encryption.CardEncryptionService;
 import org.junit.jupiter.api.Test;
