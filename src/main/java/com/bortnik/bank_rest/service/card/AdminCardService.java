@@ -3,7 +3,7 @@ package com.bortnik.bank_rest.service.card;
 import com.bortnik.bank_rest.dto.card.CardDTO;
 import com.bortnik.bank_rest.entity.Card;
 import com.bortnik.bank_rest.entity.CardStatus;
-import com.bortnik.bank_rest.exception.card.CardNotFound;
+import com.bortnik.bank_rest.exception.card.*;
 import com.bortnik.bank_rest.exception.user.UserNotFound;
 import com.bortnik.bank_rest.repository.CardRepository;
 import com.bortnik.bank_rest.service.UserService;
@@ -103,6 +103,10 @@ public class AdminCardService {
     @Transactional
     public CardDTO blockCard(final UUID cardId) {
         final Card card = getCardEntityById(cardId);
+        if (card.getStatus().equals(CardStatus.BLOCKED)) {
+            throw new CardAlreadyBlocked("Card is already blocked");
+        }
+        validateNotExpiredCard(card);
         card.setStatus(CardStatus.BLOCKED);
         card.setUpdatedAt(LocalDateTime.now());
         return CardMapper.toCardDTO(card);
@@ -116,6 +120,10 @@ public class AdminCardService {
     @Transactional
     public CardDTO activateCard(final UUID cardId) {
         final Card card = getCardEntityById(cardId);
+        if (card.getStatus().equals(CardStatus.ACTIVE)) {
+            throw new CardAlreadyActivated("Card is already activated");
+        }
+        validateNotExpiredCard(card);
         card.setStatus(CardStatus.ACTIVE);
         card.setUpdatedAt(LocalDateTime.now());
         return CardMapper.toCardDTO(card);
@@ -172,6 +180,9 @@ public class AdminCardService {
      */
     @Transactional
     public CardDTO topUpCardBalance(final UUID cardId, final BigDecimal amount) {
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IncorrectAmount("Amount must be positive");
+        }
         final Card card = getCardEntityById(cardId);
         coreCardService.validateActiveCard(card);
         card.setBalance(card.getBalance().add(amount));
@@ -187,6 +198,12 @@ public class AdminCardService {
     private Card getCardEntityById(final UUID cardId) {
         return cardRepository.findById(cardId)
                 .orElseThrow(() -> new CardNotFound("Card with id " + cardId + " not found"));
+    }
+
+    private void validateNotExpiredCard(final Card card) {
+        if (card.getStatus().equals(CardStatus.EXPIRED)) {
+            throw new CardExpired("card is expired");
+        }
     }
 
 }

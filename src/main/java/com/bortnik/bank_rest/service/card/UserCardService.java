@@ -4,10 +4,11 @@ import com.bortnik.bank_rest.dto.card.CardDTO;
 import com.bortnik.bank_rest.dto.card.CardTransactionDTO;
 import com.bortnik.bank_rest.entity.Card;
 import com.bortnik.bank_rest.entity.CardStatus;
-import com.bortnik.bank_rest.exception.card.CardNotFound;
-import com.bortnik.bank_rest.exception.card.InsufficientFunds;
+import com.bortnik.bank_rest.exception.card.*;
 import com.bortnik.bank_rest.exception.security.AccessError;
+import com.bortnik.bank_rest.exception.user.UserNotFound;
 import com.bortnik.bank_rest.repository.CardRepository;
+import com.bortnik.bank_rest.service.UserService;
 import com.bortnik.bank_rest.util.mappers.CardMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -27,6 +29,7 @@ public class UserCardService {
 
     private final CardRepository cardRepository;
     private final CoreCardService coreCardService;
+    private final UserService userService;
 
     /**
      * Получение всех карт пользователя с пагинацией.
@@ -35,6 +38,7 @@ public class UserCardService {
      * @return страница с картами пользователя
      */
     public Page<CardDTO> getAllUserCards(final UUID userId, final Pageable pageable) {
+        validateUserExists(userId);
         return coreCardService.findAllUserCards(userId, pageable);
     }
 
@@ -47,6 +51,14 @@ public class UserCardService {
      */
     @Transactional
     public void internalTransfer(final CardTransactionDTO transactionDTO, final UUID userId) {
+        validateUserExists(userId);
+        if (transactionDTO.getFromCardId().equals(transactionDTO.getToCardId())) {
+            throw new CardsAreTheSame("Cards are can't be the same");
+        }
+        if (transactionDTO.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IncorrectAmount("Amount must be positive");
+        }
+
         final Card fromCard = getCardOwnedByUser(userId, transactionDTO.getFromCardId());
         coreCardService.validateActiveCard(fromCard);
         final Card toCard = getCardOwnedByUser(userId, transactionDTO.getToCardId());
@@ -72,7 +84,14 @@ public class UserCardService {
             final UUID userId,
             final UUID cardId
     ) {
+        validateUserExists(userId);
         final Card card = getCardOwnedByUser(userId, cardId);
+        if (card.getStatus().equals(CardStatus.BLOCKED)) {
+            throw new CardAlreadyBlocked("Card is already blocked");
+        }
+        else if (card.getStatus().equals(CardStatus.EXPIRED)) {
+            throw new CardExpired("card is expired");
+        }
         card.setStatus(CardStatus.BLOCKED);
         card.setUpdatedAt(LocalDateTime.now());
         return CardMapper.toCardDTO(card);
@@ -89,6 +108,7 @@ public class UserCardService {
             final UUID userId,
             final UUID cardId
     ) {
+        validateUserExists(userId);
         final Card card = getCardOwnedByUser(userId, cardId);
         return CardMapper.toCardDTO(card);
     }
@@ -105,6 +125,7 @@ public class UserCardService {
             final CardStatus status,
             final Pageable pageable
     ) {
+        validateUserExists(userId);
         return coreCardService.findCardsByUserIdAndStatus(userId, status, pageable);
     }
 
@@ -120,6 +141,7 @@ public class UserCardService {
             final UUID userId,
             final UUID cardId
     ) {
+        validateUserExists(userId);
         final Card card = cardRepository.findById(cardId)
                 .orElseThrow(() -> new CardNotFound("Card with number " + cardId + " not found"));
 
@@ -128,5 +150,11 @@ public class UserCardService {
         }
 
         return card;
+    }
+
+    private void validateUserExists(final UUID userId) {
+        if (!userService.existsById(userId)) {
+            throw new UserNotFound("User with ID " + userId + " not found");
+        }
     }
 }

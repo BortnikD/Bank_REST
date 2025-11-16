@@ -1,15 +1,15 @@
+
 package com.bortnik.bank_rest.service.card;
 
 import com.bortnik.bank_rest.dto.card.CardDTO;
 import com.bortnik.bank_rest.dto.card.CardTransactionDTO;
 import com.bortnik.bank_rest.entity.Card;
 import com.bortnik.bank_rest.entity.CardStatus;
-import com.bortnik.bank_rest.exception.card.CardBlocked;
-import com.bortnik.bank_rest.exception.card.CardExpired;
-import com.bortnik.bank_rest.exception.card.CardNotFound;
-import com.bortnik.bank_rest.exception.card.InsufficientFunds;
+import com.bortnik.bank_rest.exception.card.*;
 import com.bortnik.bank_rest.exception.security.AccessError;
+import com.bortnik.bank_rest.exception.user.UserNotFound;
 import com.bortnik.bank_rest.repository.CardRepository;
+import com.bortnik.bank_rest.service.UserService;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -23,7 +23,8 @@ public class UserCardServiceTests {
 
     private final CardRepository cardRepository = mock(CardRepository.class);
     private final CoreCardService coreCardService = mock(CoreCardService.class);
-    private final UserCardService userCardService = new UserCardService(cardRepository, coreCardService);
+    private final UserService userService = mock(UserService.class);
+    private final UserCardService userCardService = new UserCardService(cardRepository, coreCardService, userService);
 
     @Test
     void blockCard_success() {
@@ -36,6 +37,7 @@ public class UserCardServiceTests {
                 .status(CardStatus.ACTIVE)
                 .build();
 
+        when(userService.existsById(userId)).thenReturn(true);
         when(cardRepository.findById(cardId)).thenReturn(Optional.of(card));
         when(cardRepository.save(card)).thenReturn(card);
 
@@ -50,6 +52,7 @@ public class UserCardServiceTests {
         UUID cardId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
 
+        when(userService.existsById(userId)).thenReturn(true);
         when(cardRepository.findById(cardId)).thenReturn(Optional.empty());
 
         var exception = assertThrows(CardNotFound.class, () ->
@@ -69,12 +72,66 @@ public class UserCardServiceTests {
                 .status(CardStatus.ACTIVE)
                 .build();
 
+        when(userService.existsById(userId)).thenReturn(true);
         when(cardRepository.findById(cardId)).thenReturn(Optional.of(existingCard));
 
         var exception = assertThrows(AccessError.class, () ->
                 userCardService.blockCard(userId, cardId));
 
         assertEquals("User with ID " + userId + " does not own card with number " + cardId, exception.getMessage());
+    }
+
+    @Test
+    void blockCard_shouldThrowsCardExpired() {
+        UUID cardId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+
+        Card existingCard = Card.builder()
+                .id(cardId)
+                .userId(userId)
+                .status(CardStatus.EXPIRED)
+                .build();
+
+        when(userService.existsById(userId)).thenReturn(true);
+        when(cardRepository.findById(cardId)).thenReturn(Optional.of(existingCard));
+
+        var exception = assertThrows(CardExpired.class, () ->
+                userCardService.blockCard(userId, cardId));
+
+        assertEquals("card is expired", exception.getMessage());
+    }
+
+    @Test
+    void blockCard_shouldThrowsCardAlreadyBlocked() {
+        UUID cardId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+
+        Card existingCard = Card.builder()
+                .id(cardId)
+                .userId(userId)
+                .status(CardStatus.BLOCKED)
+                .build();
+
+        when(userService.existsById(userId)).thenReturn(true);
+        when(cardRepository.findById(cardId)).thenReturn(Optional.of(existingCard));
+
+        var exception = assertThrows(CardAlreadyBlocked.class, () ->
+                userCardService.blockCard(userId, cardId));
+
+        assertEquals("Card is already blocked", exception.getMessage());
+    }
+
+    @Test
+    void blockCard_shouldThrowUserNotFound() {
+        UUID cardId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+
+        when(userService.existsById(userId)).thenReturn(false);
+
+        var exception = assertThrows(UserNotFound.class, () ->
+                userCardService.blockCard(userId, cardId));
+
+        assertEquals("User with ID " + userId + " not found", exception.getMessage());
     }
 
     @Test
@@ -104,6 +161,7 @@ public class UserCardServiceTests {
                 .status(CardStatus.ACTIVE)
                 .build();
 
+        when(userService.existsById(userId)).thenReturn(true);
         when(cardRepository.findById(fromCardId)).thenReturn(Optional.of(fromCard));
         when(cardRepository.findById(toCardId)).thenReturn(Optional.of(toCard));
         when(cardRepository.save(fromCard)).thenReturn(fromCard);
@@ -142,6 +200,7 @@ public class UserCardServiceTests {
                 .status(CardStatus.ACTIVE)
                 .build();
 
+        when(userService.existsById(userId)).thenReturn(true);
         when(cardRepository.findById(fromCardId)).thenReturn(Optional.of(fromCard));
         when(cardRepository.findById(toCardId)).thenReturn(Optional.of(toCard));
 
@@ -171,6 +230,7 @@ public class UserCardServiceTests {
                 .status(CardStatus.ACTIVE)
                 .build();
 
+        when(userService.existsById(userId)).thenReturn(true);
         when(cardRepository.findById(fromCardId)).thenReturn(Optional.of(fromCard));
 
         var exception = assertThrows(AccessError.class, () ->
@@ -206,6 +266,7 @@ public class UserCardServiceTests {
                 .status(CardStatus.ACTIVE)
                 .build();
 
+        when(userService.existsById(userId)).thenReturn(true);
         when(cardRepository.findById(fromCardId)).thenReturn(Optional.of(fromCard));
         when(cardRepository.findById(toCardId)).thenReturn(Optional.of(toCard));
 
@@ -228,6 +289,7 @@ public class UserCardServiceTests {
                 .amount(amount)
                 .build();
 
+        when(userService.existsById(userId)).thenReturn(true);
         when(cardRepository.findById(fromCardId)).thenReturn(Optional.empty());
 
         var exception = assertThrows(CardNotFound.class, () ->
@@ -256,6 +318,7 @@ public class UserCardServiceTests {
                 .status(CardStatus.ACTIVE)
                 .build();
 
+        when(userService.existsById(userId)).thenReturn(true);
         when(cardRepository.findById(fromCardId)).thenReturn(Optional.of(fromCard));
         when(cardRepository.findById(toCardId)).thenReturn(Optional.empty());
 
@@ -285,6 +348,7 @@ public class UserCardServiceTests {
                 .status(CardStatus.BLOCKED)
                 .build();
 
+        when(userService.existsById(userId)).thenReturn(true);
         when(cardRepository.findById(fromCardId)).thenReturn(Optional.of(fromCard));
         doThrow(new CardBlocked("Card with ID " + fromCard + " is blocked"))
                 .when(coreCardService).validateActiveCard(fromCard);
@@ -320,6 +384,7 @@ public class UserCardServiceTests {
                 .status(CardStatus.BLOCKED)
                 .build();
 
+        when(userService.existsById(userId)).thenReturn(true);
         when(cardRepository.findById(fromCardId)).thenReturn(Optional.of(fromCard));
         when(cardRepository.findById(toCardId)).thenReturn(Optional.of(toCard));
         doThrow(new CardBlocked("Card with ID " + toCardId + " is blocked"))
@@ -349,6 +414,7 @@ public class UserCardServiceTests {
                 .status(CardStatus.EXPIRED)
                 .build();
 
+        when(userService.existsById(userId)).thenReturn(true);
         when(cardRepository.findById(fromCardId)).thenReturn(Optional.of(fromCard));
         doThrow(new CardExpired("Card with ID " + fromCard + " is expired"))
                 .when(coreCardService).validateActiveCard(fromCard);
@@ -384,6 +450,7 @@ public class UserCardServiceTests {
                 .status(CardStatus.EXPIRED)
                 .build();
 
+        when(userService.existsById(userId)).thenReturn(true);
         when(cardRepository.findById(fromCardId)).thenReturn(Optional.of(fromCard));
         when(cardRepository.findById(toCardId)).thenReturn(Optional.of(toCard));
         doThrow(new CardExpired("Card with ID " + toCardId + " is expired"))
@@ -391,5 +458,64 @@ public class UserCardServiceTests {
 
         assertThrows(CardExpired.class, () ->
                 userCardService.internalTransfer(transactionDTO, userId));
+    }
+
+    @Test
+    void internalTransfer_shouldThrowCardsAreTheSame() {
+        UUID fromCardId = UUID.randomUUID();
+        BigDecimal amount = BigDecimal.valueOf(100);
+
+        CardTransactionDTO cardTransactionDTO = CardTransactionDTO.builder()
+                .fromCardId(fromCardId)
+                .toCardId(fromCardId)
+                .amount(amount)
+                .build();
+
+        when(userService.existsById(fromCardId)).thenReturn(true);
+
+        var exception = assertThrows(CardsAreTheSame.class, () ->
+                userCardService.internalTransfer(cardTransactionDTO, fromCardId));
+
+        assertEquals("Cards are can't be the same", exception.getMessage());
+    }
+
+    @Test
+    void internalTransfer_shouldThrowIncorrectAmount() {
+        UUID fromCardId = UUID.randomUUID();
+        UUID toCardId = UUID.randomUUID();
+        BigDecimal amount = BigDecimal.valueOf(-100);
+
+        CardTransactionDTO cardTransactionDTO = CardTransactionDTO.builder()
+                .fromCardId(fromCardId)
+                .toCardId(toCardId)
+                .amount(amount)
+                .build();
+
+        when(userService.existsById(fromCardId)).thenReturn(true);
+
+        var exception = assertThrows(IncorrectAmount.class, () ->
+                userCardService.internalTransfer(cardTransactionDTO, fromCardId));
+
+        assertEquals("Amount must be positive", exception.getMessage());
+    }
+
+    @Test
+    void internalTransfer_shouldThrowUserNotFound() {
+        UUID fromCardId = UUID.randomUUID();
+        UUID toCardId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+
+        CardTransactionDTO dto = CardTransactionDTO.builder()
+                .fromCardId(fromCardId)
+                .toCardId(toCardId)
+                .amount(BigDecimal.valueOf(100))
+                .build();
+
+        when(userService.existsById(userId)).thenReturn(false);
+
+        var exception = assertThrows(UserNotFound.class, () ->
+                userCardService.internalTransfer(dto, userId));
+
+        assertEquals("User with ID " + userId + " not found", exception.getMessage());
     }
 }

@@ -3,7 +3,7 @@ package com.bortnik.bank_rest.service.card;
 import com.bortnik.bank_rest.dto.card.CardDTO;
 import com.bortnik.bank_rest.entity.Card;
 import com.bortnik.bank_rest.entity.CardStatus;
-import com.bortnik.bank_rest.exception.card.CardNotFound;
+import com.bortnik.bank_rest.exception.card.*;
 import com.bortnik.bank_rest.exception.user.UserNotFound;
 import com.bortnik.bank_rest.repository.CardRepository;
 import com.bortnik.bank_rest.security.card_encryption.CardEncryptionService;
@@ -63,6 +63,36 @@ public class AdminCardServiceTests {
     }
 
     @Test
+    public void blockCard_shouldThrowCardExpired() {
+        Card card = Card.builder()
+                .id(UUID.randomUUID())
+                .status(CardStatus.EXPIRED)
+                .build();
+
+        when(cardRepository.findById(card.getId())).thenReturn(Optional.of(card));
+
+        var exception = assertThrows(CardExpired.class, () ->
+                adminCardService.blockCard(card.getId()));
+
+        assertEquals("card is expired", exception.getMessage());
+    }
+
+    @Test
+    public void blockCard_shouldThrowCardAlreadyBlocked() {
+        Card card = Card.builder()
+                .id(UUID.randomUUID())
+                .status(CardStatus.BLOCKED)
+                .build();
+
+        when(cardRepository.findById(card.getId())).thenReturn(Optional.of(card));
+
+        var exception = assertThrows(CardAlreadyBlocked.class, () ->
+                adminCardService.blockCard(card.getId()));
+
+        assertEquals("Card is already blocked", exception.getMessage());
+    }
+
+    @Test
     public void activateCard_success() {
         Card card = Card.builder()
                 .id(UUID.randomUUID())
@@ -90,6 +120,37 @@ public class AdminCardServiceTests {
     }
 
     @Test
+    public void activateCard_shouldThrowCardExpired() {
+        Card card = Card.builder()
+                .id(UUID.randomUUID())
+                .status(CardStatus.EXPIRED)
+                .build();
+
+        when(cardRepository.findById(card.getId())).thenReturn(Optional.of(card));
+
+        var exception = assertThrows(CardExpired.class, () ->
+                adminCardService.activateCard(card.getId()));
+
+        assertEquals("card is expired", exception.getMessage());
+    }
+
+    @Test
+    public void activateCard_shouldThrowCardAlreadyActivated() {
+        Card card = Card.builder()
+                .id(UUID.randomUUID())
+                .status(CardStatus.ACTIVE)
+                .build();
+
+        when(cardRepository.findById(card.getId())).thenReturn(Optional.of(card));
+
+        var exception = assertThrows(CardAlreadyActivated.class, () ->
+                adminCardService.activateCard(card.getId()));
+
+        assertEquals("Card is already activated", exception.getMessage());
+    }
+
+
+    @Test
     public void toUpCardBalance_success() {
         Card card = Card.builder()
                 .id(UUID.randomUUID())
@@ -113,6 +174,17 @@ public class AdminCardServiceTests {
                 adminCardService.topUpCardBalance(cardId, BigDecimal.valueOf(50)));
 
         assertEquals("Card with id " + cardId + " not found", exception.getMessage());
+    }
+
+    @Test
+    public void toUpCardBalance_shouldThrowIncorrectAmount() {
+        UUID cardId = UUID.randomUUID();
+        BigDecimal incorrectAmount = BigDecimal.valueOf(-100);
+
+        var exception = assertThrows(IncorrectAmount.class, () ->
+                adminCardService.topUpCardBalance(cardId, incorrectAmount));
+
+        assertEquals("Amount must be positive", exception.getMessage());
     }
 
     @Test

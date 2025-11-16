@@ -2,15 +2,13 @@ package com.bortnik.bank_rest.controller;
 
 import com.bortnik.bank_rest.dto.ApiError;
 import com.bortnik.bank_rest.exception.BadRequest;
-import com.bortnik.bank_rest.exception.card.CardBlocked;
-import com.bortnik.bank_rest.exception.card.CardExpired;
-import com.bortnik.bank_rest.exception.card.CardNotFound;
-import com.bortnik.bank_rest.exception.card.InsufficientFunds;
+import com.bortnik.bank_rest.exception.card.*;
 import com.bortnik.bank_rest.exception.security.AccessError;
 import com.bortnik.bank_rest.exception.user.UserAlreadyExists;
 import com.bortnik.bank_rest.exception.user.UserNotFound;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -93,6 +91,42 @@ public class ExceptionsHandler {
         );
     }
 
+    @ExceptionHandler(CardsAreTheSame.class)
+    ResponseEntity<ApiError> handleCardsAreTheSame(CardsAreTheSame cardsAreTheSame) {
+        return buildResponseEntity(
+                "Card Are The Same",
+                cardsAreTheSame.getMessage(),
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
+    @ExceptionHandler(IncorrectAmount.class)
+    ResponseEntity<ApiError> handleIncorrectAmount(IncorrectAmount incorrectAmount) {
+        return buildResponseEntity(
+                "Card Are The Same",
+                incorrectAmount.getMessage(),
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
+    @ExceptionHandler(CardAlreadyActivated.class)
+    ResponseEntity<ApiError> handleCardAlreadyActivated(CardAlreadyActivated cardAlreadyActivated) {
+        return buildResponseEntity(
+                "Card Already Activated",
+                cardAlreadyActivated.getMessage(),
+                HttpStatus.CONFLICT
+        );
+    }
+
+    @ExceptionHandler(CardAlreadyBlocked.class)
+    ResponseEntity<ApiError> handleCardAlreadyActivated(CardAlreadyBlocked cardAlreadyBlocked) {
+        return buildResponseEntity(
+                "Card Already Blocked",
+                cardAlreadyBlocked.getMessage(),
+                HttpStatus.CONFLICT
+        );
+    }
+
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     ResponseEntity<ApiError> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException exception) {
         return buildResponseEntity(
@@ -108,6 +142,15 @@ public class ExceptionsHandler {
                 "Resource Not Found",
                 exception.getMessage(),
                 HttpStatus.NOT_FOUND
+        );
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    ResponseEntity<ApiError> handleBadCredentialsException(BadCredentialsException exception) {
+        return buildResponseEntity(
+                "Bad Credentials",
+                exception.getMessage(),
+                HttpStatus.FORBIDDEN
         );
     }
 
