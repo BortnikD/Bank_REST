@@ -6,11 +6,13 @@ import com.bortnik.bank_rest.dto.auth.UserRegister;
 import com.bortnik.bank_rest.dto.user.UserCreateDTO;
 import com.bortnik.bank_rest.dto.user.UserDTO;
 import com.bortnik.bank_rest.entity.Role;
+import com.bortnik.bank_rest.exception.BadCredentials;
 import com.bortnik.bank_rest.security.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -44,19 +46,23 @@ public class AuthenticationService {
     }
 
     public AuthResponse login(UserLogin userLogin) {
-        final Authentication auth =  authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(userLogin.getUsername(), userLogin.getPassword())
-        );
+        try {
+            final Authentication auth =  authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(userLogin.getUsername(), userLogin.getPassword())
+            );
 
-        final Collection<String> roles = auth.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .toList();
+            final Collection<String> roles = auth.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .toList();
 
-        final String token = jwtTokenProvider.generateToken(userLogin.getUsername(), roles);
-        return AuthResponse.builder()
-                .username(userLogin.getUsername())
-                .tokenType("Bearer")
-                .token(token)
-                .build();
+            final String token = jwtTokenProvider.generateToken(userLogin.getUsername(), roles);
+            return AuthResponse.builder()
+                    .username(userLogin.getUsername())
+                    .tokenType("Bearer")
+                    .token(token)
+                    .build();
+        } catch (AuthenticationException ex) {
+            throw new BadCredentials("Invalid username or password");
+        }
     }
 }

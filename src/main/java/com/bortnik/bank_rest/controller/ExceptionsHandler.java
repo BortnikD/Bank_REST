@@ -1,6 +1,7 @@
 package com.bortnik.bank_rest.controller;
 
 import com.bortnik.bank_rest.dto.ApiError;
+import com.bortnik.bank_rest.exception.BadCredentials;
 import com.bortnik.bank_rest.exception.BadRequest;
 import com.bortnik.bank_rest.exception.card.*;
 import com.bortnik.bank_rest.exception.security.AccessError;
@@ -145,12 +146,21 @@ public class ExceptionsHandler {
         );
     }
 
+    @ExceptionHandler(BadCredentials.class)
+    ResponseEntity<ApiError> handleBadCredentials(BadCredentials badCredentials) {
+        return buildResponseEntity(
+                "Bad Credentials",
+                badCredentials.getMessage(),
+                HttpStatus.UNAUTHORIZED
+        );
+    }
+
     @ExceptionHandler(BadCredentialsException.class)
     ResponseEntity<ApiError> handleBadCredentialsException(BadCredentialsException exception) {
         return buildResponseEntity(
                 "Bad Credentials",
                 exception.getMessage(),
-                HttpStatus.FORBIDDEN
+                HttpStatus.UNAUTHORIZED
         );
     }
 
