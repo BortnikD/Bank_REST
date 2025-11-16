@@ -65,7 +65,8 @@ public class WebSecurityConfig {
                                         "/v3/api-docs.yaml",
                                         "/swagger-resources/**",
                                         "/webjars/**",
-                                        "/api/auth/**"
+                                        "/api/auth/**",
+                                        "/health"
                                 ).permitAll()
                                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                                 .requestMatchers("/api/**").hasAnyRole("USER","ADMIN")
