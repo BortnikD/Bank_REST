@@ -11,9 +11,9 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class CoreCardServiceTests {
 
@@ -46,7 +46,7 @@ public class CoreCardServiceTests {
     }
 
     @Test
-    void validateActiveCard_throwsCardExpired() {
+    void validateActiveCard_throwsCardExpired_WhenCardStatusIsExpired() {
         Card card = Card.builder()
                 .id(UUID.randomUUID())
                 .status(CardStatus.EXPIRED)
@@ -57,5 +57,23 @@ public class CoreCardServiceTests {
                 coreCardService.validateActiveCard(card));
 
         assertEquals("Card with ID " + card.getId() + " is expired", exception.getMessage());
+    }
+
+
+    @Test
+    void validateActiveCard_throwsCardExpired_WhenCardIsPastExpirationDate() {
+        Card card = Card.builder()
+                .id(UUID.randomUUID())
+                .status(CardStatus.ACTIVE) // status is ACTIVE but the expiration date is past
+                .expirationDate(LocalDate.now().minusDays(1))
+                .build();
+
+        when(cardRepository.save(card)).thenReturn(card);
+
+        var exception = assertThrows(CardExpired.class, () ->
+                coreCardService.validateActiveCard(card));
+
+        assertEquals(CardStatus.EXPIRED, card.getStatus());
+        assertTrue(exception.getMessage().contains("has expired on"));
     }
 }

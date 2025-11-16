@@ -9,11 +9,13 @@ import com.bortnik.bank_rest.exception.user.UserNotFound;
 import com.bortnik.bank_rest.repository.CardRepository;
 import com.bortnik.bank_rest.service.UserService;
 import com.bortnik.bank_rest.util.mappers.CardMapper;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 /**
@@ -61,17 +63,25 @@ public class CoreCardService {
     }
 
     /**
-     * Валидация активности карты.
+     * Проверяет, что карта активна (не заблокирована и не истекла).
+     * Если карта заблокирована или истекла, выбрасывает соответствующее исключение.
+     * Если карта истекла по дате, обновляет её статус на EXPIRED.
+     *
      * @param card карта для проверки
      * @throws CardBlocked если карта заблокирована
      * @throws CardExpired если карта истекла
      */
+    @Transactional
     public void validateActiveCard(Card card) {
         if (card.getStatus() == CardStatus.BLOCKED) {
             throw new CardBlocked("Card with ID " + card.getId() + " is blocked");
         }
         else if (card.getStatus() == CardStatus.EXPIRED) {
             throw new CardExpired("Card with ID " + card.getId() + " is expired");
+        }
+        else if (card.getExpirationDate().isBefore(LocalDate.now())) {
+            card.setStatus(CardStatus.EXPIRED);
+            throw new CardExpired("Card with ID " + card.getId() + " has expired on " + card.getExpirationDate());
         }
     }
 }
