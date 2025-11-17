@@ -3,6 +3,7 @@ package com.bortnik.bank_rest.controller.admin;
 import com.bortnik.bank_rest.controller.validator.CardValidator;
 import com.bortnik.bank_rest.dto.ApiError;
 import com.bortnik.bank_rest.dto.card.CardDTO;
+import com.bortnik.bank_rest.dto.card.TopUpRequest;
 import com.bortnik.bank_rest.entity.CardStatus;
 import com.bortnik.bank_rest.service.card.AdminCardService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,7 +22,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.UUID;
 
 @RestController
@@ -242,9 +242,9 @@ public class AdminCardController {
     @PostMapping("/{cardId}/top-up")
     public CardDTO topUpCardBalance(
             @Parameter(description = "Card ID") @PathVariable UUID cardId,
-            @Parameter(description = "Amount to top up") @RequestParam BigDecimal amount
+            @Parameter(description = "Amount to top up") @RequestBody TopUpRequest topUpRequest
     ) {
-        CardValidator.validateAmountPositive(amount);
-        return adminCardService.topUpCardBalance(cardId, amount);
+        CardValidator.validateAmountPositive(topUpRequest.getAmount());
+        return adminCardService.topUpCardBalance(cardId, topUpRequest.getAmount());
     }
 }
