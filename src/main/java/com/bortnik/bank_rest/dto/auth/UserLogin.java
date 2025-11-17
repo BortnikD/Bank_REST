@@ -1,8 +1,10 @@
 package com.bortnik.bank_rest.dto.auth;
 
-import lombok.Data;
+import lombok.Builder;
+import lombok.Getter;
 
-@Data
+@Getter
+@Builder
 public class UserLogin {
     private String username;
     private String password;

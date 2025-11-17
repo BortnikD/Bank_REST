@@ -9,6 +9,7 @@ import com.bortnik.bank_rest.entity.Role;
 import com.bortnik.bank_rest.exception.BadCredentials;
 import com.bortnik.bank_rest.security.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -22,6 +23,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthenticationService {
 
     private final UserService userService;
@@ -30,6 +32,7 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
 
     public AuthResponse register(UserRegister userRegister) {
+        log.info("Registering new user: {}", userRegister.getUsername());
         final Role userRole = Role.USER;
         final UserCreateDTO createUserDTO = UserCreateDTO.builder()
                 .username(userRegister.getUsername())
@@ -38,6 +41,9 @@ public class AuthenticationService {
                 .build();
         final UserDTO user = userService.createUser(createUserDTO);
         final String token = jwtTokenProvider.generateToken(user.getUsername(), List.of(userRole.toString()));
+
+        log.info("User with username {} registered successfully", user.getUsername());
+
         return AuthResponse.builder()
                 .username(user.getUsername())
                 .tokenType("Bearer")
@@ -46,6 +52,7 @@ public class AuthenticationService {
     }
 
     public AuthResponse login(UserLogin userLogin) {
+        log.info("Attempting login for user: {}", userLogin.getUsername());
         try {
             final Authentication auth =  authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(userLogin.getUsername(), userLogin.getPassword())
@@ -56,12 +63,16 @@ public class AuthenticationService {
                     .toList();
 
             final String token = jwtTokenProvider.generateToken(userLogin.getUsername(), roles);
+
+            log.info("User with username {} logged in successfully", userLogin.getUsername());
+
             return AuthResponse.builder()
                     .username(userLogin.getUsername())
                     .tokenType("Bearer")
                     .token(token)
                     .build();
         } catch (AuthenticationException ex) {
+            log.warn("Authentication failed for user: {}", userLogin.getUsername());
             throw new BadCredentials("Invalid username or password");
         }
     }
