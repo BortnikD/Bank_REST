@@ -4,7 +4,11 @@ WORKDIR /app
 
 COPY . .
 
-RUN gradle build -x test --no-daemon
+# Запускаем тесты
+RUN gradle test --no-daemon
+
+# Полноценная сборка
+RUN gradle build --no-daemon
 
 FROM eclipse-temurin:21-jre
 
