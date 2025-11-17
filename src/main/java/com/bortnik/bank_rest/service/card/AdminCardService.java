@@ -12,6 +12,7 @@ import com.bortnik.bank_rest.util.SimpleCardNumberGenerator;
 import com.bortnik.bank_rest.util.mappers.CardMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,7 @@ import java.util.UUID;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AdminCardService {
 
     private final CardRepository cardRepository;
@@ -41,6 +43,7 @@ public class AdminCardService {
      * @param userId ID пользователя запросившего карты
      * @param pageable параметры пагинации
      * @return страница с картами пользователя
+     * @throws UserNotFound если пользователь не найден
      */
     public Page<CardDTO> getAllUserCards(final UUID userId, final Pageable pageable) {
         return coreCardService.findAllUserCards(userId, pageable);
@@ -51,6 +54,7 @@ public class AdminCardService {
      * @param userId ID пользователя запросившего карты
      * @param status статус карты
      * @param pageable параметры пагинации
+     * @throws UserNotFound если пользователь не найден
      * @return страница с картами пользователя по статусу
      */
     public Page<CardDTO> getCardsByUserIdAndStatus(
@@ -102,13 +106,22 @@ public class AdminCardService {
      */
     @Transactional
     public CardDTO blockCard(final UUID cardId) {
+        log.info("Admin tries to block card {}", cardId);
+
         final Card card = getCardEntityById(cardId);
+
         if (card.getStatus().equals(CardStatus.BLOCKED)) {
+            log.warn("Block failed: card {} already blocked", cardId);
             throw new CardAlreadyBlocked("Card is already blocked");
         }
+
         validateNotExpiredCard(card);
+
         card.setStatus(CardStatus.BLOCKED);
         card.setUpdatedAt(LocalDateTime.now());
+
+        log.info("Card {} successfully blocked by admin", cardId);
+
         return CardMapper.toCardDTO(card);
     }
 
@@ -119,13 +132,22 @@ public class AdminCardService {
      */
     @Transactional
     public CardDTO activateCard(final UUID cardId) {
+        log.info("Admin tries to activate card {}", cardId);
+
         final Card card = getCardEntityById(cardId);
+
         if (card.getStatus().equals(CardStatus.ACTIVE)) {
+            log.warn("Activation failed: card {} already active", cardId);
             throw new CardAlreadyActivated("Card is already activated");
         }
+
         validateNotExpiredCard(card);
+
         card.setStatus(CardStatus.ACTIVE);
         card.setUpdatedAt(LocalDateTime.now());
+
+        log.info("Card {} successfully activated by admin", cardId);
+
         return CardMapper.toCardDTO(card);
     }
 
@@ -136,8 +158,12 @@ public class AdminCardService {
      */
     @Transactional
     public void deleteCard(final UUID cardId) {
+        log.info("Admin deletes card {}", cardId);
         final Card card = getCardEntityById(cardId);
+
         cardRepository.delete(card);
+
+        log.info("Card {} successfully deleted by admin", cardId);
     }
 
     /**
@@ -146,10 +172,14 @@ public class AdminCardService {
      *
      * @param userId ID пользователя, для которого создается карта
      * @return {@link CardDTO} объект, содержащий сведения о созданной карточке
+     * @throws UserNotFound если пользователь с указанным ID не найден
      */
     @Transactional
     public CardDTO createCardForUser(final UUID userId) {
+        log.info("Admin creates new card for user {}", userId);
+
         if (!userService.existsById(userId)) {
+            log.warn("Card creation failed: user {} not found", userId);
             throw new UserNotFound("User with ID " + userId + " not found");
         }
 
@@ -158,18 +188,20 @@ public class AdminCardService {
         final String encryptedCardNumber = cardEncryptionService.encrypt(cardNumber);
         final LocalDate expirationDate = LocalDate.now().plusYears(EXPIRATION_YEARS);
 
-        return CardMapper.toCardDTO(
-                cardRepository.save(
-                        Card.builder()
-                                .userId(userId)
-                                .cardNumber(encryptedCardNumber)
-                                .lastFourDigits(lastFourDigits)
-                                .status(CardStatus.ACTIVE)
-                                .balance(BigDecimal.ZERO)
-                                .expirationDate(expirationDate)
-                                .build()
-                )
+        final Card saved = cardRepository.save(
+                Card.builder()
+                        .userId(userId)
+                        .cardNumber(encryptedCardNumber)
+                        .lastFourDigits(lastFourDigits)
+                        .status(CardStatus.ACTIVE)
+                        .balance(BigDecimal.ZERO)
+                        .expirationDate(expirationDate)
+                        .build()
         );
+
+        log.info("Card created for user {}: **** **** **** {}", userId, lastFourDigits);
+
+        return CardMapper.toCardDTO(saved);
     }
 
     /**
@@ -177,15 +209,28 @@ public class AdminCardService {
      * @param cardId ID карты
      * @param amount сумма пополнения
      * @return обновленная информация о карте
+     * @throws IncorrectAmount если сумма некорректна
+     * @throws CardNotFound если одна из карт не найдена
+     * @throws CardBlocked если карта заблокирована
+     * @throws CardExpired если карта истекла
      */
     @Transactional
     public CardDTO topUpCardBalance(final UUID cardId, final BigDecimal amount) {
+        log.info("Admin tries to top up card {} by amount {}", cardId, amount);
+
         if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+            log.warn("Top-up failed: incorrect amount {} for card {}", amount, cardId);
             throw new IncorrectAmount("Amount must be positive");
         }
+
         final Card card = getCardEntityById(cardId);
+
         coreCardService.validateActiveCard(card);
+
         card.setBalance(card.getBalance().add(amount));
+
+        log.info("Card {} topped up by admin. New balance={}", cardId, card.getBalance());
+
         return CardMapper.toCardDTO(card);
     }
 
@@ -197,11 +242,22 @@ public class AdminCardService {
      */
     private Card getCardEntityById(final UUID cardId) {
         return cardRepository.findById(cardId)
-                .orElseThrow(() -> new CardNotFound("Card with id " + cardId + " not found"));
+                .orElseThrow(() -> {
+                    log.warn("Card not found: {}", cardId);
+                    return new CardNotFound("Card with id " + cardId + " not found");
+                });
     }
 
+    /**
+     * Проверяет, что карта не истекла.
+     * Если карта истекла, выбрасывает соответствующее исключение.
+     *
+     * @param card карта для проверки
+     * @throws CardExpired если карта истекла
+     */
     private void validateNotExpiredCard(final Card card) {
         if (card.getStatus().equals(CardStatus.EXPIRED)) {
+            log.warn("Operation failed: card {} expired", card.getId());
             throw new CardExpired("card is expired");
         }
     }

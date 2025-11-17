@@ -11,6 +11,7 @@ import com.bortnik.bank_rest.service.UserService;
 import com.bortnik.bank_rest.util.mappers.CardMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,7 @@ import java.util.UUID;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CoreCardService {
 
     public final CardRepository cardRepository;
@@ -74,13 +76,17 @@ public class CoreCardService {
     @Transactional
     public void validateActiveCard(Card card) {
         if (card.getStatus() == CardStatus.BLOCKED) {
+            log.warn("Attempt to use blocked card: {}", card.getId());
             throw new CardBlocked("Card with ID " + card.getId() + " is blocked");
         }
         else if (card.getStatus() == CardStatus.EXPIRED) {
+            log.warn("Attempt to use expired card: {}", card.getId());
             throw new CardExpired("Card with ID " + card.getId() + " is expired");
         }
         else if (card.getExpirationDate().isBefore(LocalDate.now())) {
+            log.warn("Card with ID {} has expired on {}", card.getId(), card.getExpirationDate());
             card.setStatus(CardStatus.EXPIRED);
+            log.info("Updating status of card {} to EXPIRED", card.getId());
             throw new CardExpired("Card with ID " + card.getId() + " has expired on " + card.getExpirationDate());
         }
     }

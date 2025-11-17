@@ -10,6 +10,7 @@ import com.bortnik.bank_rest.repository.UserRepository;
 import com.bortnik.bank_rest.util.mappers.UserMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserService {
 
     private final UserRepository userRepository;
@@ -31,10 +33,14 @@ public class UserService {
      */
     @Transactional
     public UserDTO createUser(final UserCreateDTO userCreateDTO) {
+        log.info("Creating user with username: {}", userCreateDTO.getUsername());
+
         if (userRepository.existsByUsername(userCreateDTO.getUsername())) {
+            log.warn("User with username {} already exists", userCreateDTO.getUsername());
             throw new UserAlreadyExists("User with username " + userCreateDTO.getUsername() + " already exists");
         }
-        return UserMapper.toUserDTO(
+
+        UserDTO user = UserMapper.toUserDTO(
                 userRepository.save(
                         User.builder()
                                 .username(userCreateDTO.getUsername())
@@ -43,6 +49,10 @@ public class UserService {
                                 .build()
                 )
         );
+
+        log.info("User with username: {} created successfully", userCreateDTO.getUsername());
+
+        return user;
     }
 
     public UserDTO getUserById(final UUID userId) {
@@ -58,11 +68,21 @@ public class UserService {
      */
     @Transactional
     public UserDTO makeAdmin(final UUID userId) {
+        log.info("Making user with id {} admin", userId);
+
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFound("User with id " + userId + " not found"));
+                .orElseThrow(() -> {
+                    log.warn("User with id {} not found", userId);
+                    return new UserNotFound("User with id " + userId + " not found");
+                });
+
         user.setRole(Role.ADMIN);
         user.setUpdatedAt(LocalDateTime.now());
-        return UserMapper.toUserDTO(userRepository.save(user));
+        UserDTO userDto = UserMapper.toUserDTO(userRepository.save(user));
+
+        log.info("User with id {} is now an admin", userId);
+
+        return userDto;
     }
 
     /**
@@ -92,9 +112,13 @@ public class UserService {
      */
     @Transactional
     public void deleteUser(final UUID id) {
+        log.info("Deleting user with id {}", id);
+
         final User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFound("User with id " + id + " not found"));
+
         userRepository.delete(user);
+        log.info("User with id {} deleted successfully", id);
     }
 
     public boolean existsById(final UUID userId) {
