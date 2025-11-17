@@ -2,17 +2,17 @@ package com.bortnik.bank_rest.dto.user;
 
 import com.bortnik.bank_rest.entity.Role;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Data
+@Value
 @Builder
 public class UserDTO {
-    private UUID id;
-    private String username;
-    private Role role;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+     UUID id;
+     String username;
+     Role role;
+     LocalDateTime createdAt;
+     LocalDateTime updatedAt;
 }

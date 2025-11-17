@@ -1,12 +1,12 @@
 package com.bortnik.bank_rest.dto.auth;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
 
-@Data
+@Value
 @Builder
 public class AuthResponse {
-    private String tokenType;
-    private String token;
-    private String username;
+    String tokenType;
+    String token;
+    String username;
 }

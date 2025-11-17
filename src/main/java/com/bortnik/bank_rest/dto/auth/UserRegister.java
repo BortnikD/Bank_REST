@@ -1,10 +1,11 @@
 package com.bortnik.bank_rest.dto.auth;
 
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 
 @Getter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserRegister {
     private String username;
     private String password;

@@ -1,15 +1,16 @@
 package com.bortnik.bank_rest.dto.card;
 
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
-@Data
+@Getter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class CardTransactionDTO {
-    final UUID fromCardId;
-    final UUID toCardId;
-    final BigDecimal amount;
+    private UUID fromCardId;
+    private UUID toCardId;
+    private BigDecimal amount;
 }
