@@ -2,11 +2,10 @@ package com.bortnik.bank_rest.security.jwt;
 
 import com.bortnik.bank_rest.dto.ApiError;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
@@ -17,7 +16,10 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 
 @Component
+@RequiredArgsConstructor
 public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
+
+    private final ObjectMapper objectMapper;
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
@@ -33,11 +35,8 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
                 .message(authException.getMessage())
                 .build();
 
-        // Регистрируем модуль для корректной сериализации LocalDateTime
-        final ObjectMapper mapper = new ObjectMapper()
-                .registerModule(new JavaTimeModule())
-                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-        mapper.writeValue(response.getOutputStream(), apiError);
+        response.getWriter().write(objectMapper.writeValueAsString(apiError));
+        response.getWriter().flush();
     }
 }
