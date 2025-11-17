@@ -1,7 +1,7 @@
 package com.bortnik.bank_rest.controller.user;
 
 import com.bortnik.bank_rest.controller.validator.CardValidator;
-import com.bortnik.bank_rest.dto.ApiError;
+import com.bortnik.bank_rest.dto.ApiResponse;
 import com.bortnik.bank_rest.dto.card.CardDTO;
 import com.bortnik.bank_rest.dto.card.CardTransactionDTO;
 import com.bortnik.bank_rest.entity.CardStatus;
@@ -9,10 +9,6 @@ import com.bortnik.bank_rest.security.services.UserDetailsImpl;
 import com.bortnik.bank_rest.service.card.UserCardService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -37,20 +33,8 @@ public class CardController {
             summary = "Get all cards of the authenticated user",
             description = "Returns a paginated list of cards owned by the authenticated user."
     )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Cards retrieved",
-                    content = @Content(schema = @Schema(implementation = Page.class))
-            ),
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "Unauthorized",
-                    content = @Content(schema = @Schema(implementation = ApiError.class))
-            )
-    })
     @GetMapping("/my")
-    public Page<CardDTO> getAllUserCards(
+    public ApiResponse<Page<CardDTO>> getAllUserCards(
             @Parameter(hidden = true)
             @AuthenticationPrincipal
             UserDetailsImpl userDetailsImpl,
@@ -65,77 +49,35 @@ public class CardController {
             CardStatus status
     ) {
         if (status != null) {
-            return userCardService.getCardsByUserIdAndStatus(userDetailsImpl.getId(), status, pageable);
+            return ApiResponse.<Page<CardDTO>>builder()
+                    .responseData(userCardService.getCardsByUserIdAndStatus(userDetailsImpl.getId(), status, pageable))
+                    .build();
         }
-        return userCardService.getAllUserCards(userDetailsImpl.getId(), pageable);
+        return ApiResponse.<Page<CardDTO>>builder()
+                .responseData(userCardService.getAllUserCards(userDetailsImpl.getId(), pageable))
+                .build();
     }
 
     @Operation(
             summary = "Get card by ID",
             description = "Returns details of a specific card of the authenticated user."
     )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Card found",
-                    content = @Content(schema = @Schema(implementation = CardDTO.class))),
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "Unauthorized",
-                    content = @Content(schema = @Schema(implementation = ApiError.class))
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Card not found",
-                    content = @Content(schema = @Schema(implementation = ApiError.class))
-            ),
-            @ApiResponse(
-                    responseCode = "409",
-                    description = "Access conflict",
-                    content = @Content(schema = @Schema(implementation = ApiError.class))
-            )
-    })
     @GetMapping("/{cardId}")
-    public CardDTO getCardById(
+    public ApiResponse<CardDTO> getCardById(
             @Parameter(hidden = true)
             @AuthenticationPrincipal UserDetailsImpl userDetailsImpl,
             @Parameter(description = "Card UUID", required = true)
             @PathVariable UUID cardId
     ) {
-        return userCardService.getUserCardById(userDetailsImpl.getId(), cardId);
+        return ApiResponse.<CardDTO>builder()
+                .responseData(userCardService.getUserCardById(userDetailsImpl.getId(), cardId))
+                .build();
     }
 
     @Operation(
             summary = "Internal transfer between user's cards",
             description = "Transfers money between two cards of the authenticated user."
     )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Transfer completed successfully",
-                    content = @Content(schema = @Schema(implementation = CardDTO.class))
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Invalid transfer amount",
-                    content = @Content(schema = @Schema(implementation = ApiError.class))
-            ),
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "Unauthorized",
-                    content = @Content(schema = @Schema(implementation = ApiError.class))
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Card not found",
-                    content = @Content(schema = @Schema(implementation = ApiError.class))
-            ),
-            @ApiResponse(
-                    responseCode = "409",
-                    description = "Access conflict",
-                    content = @Content(schema = @Schema(implementation = ApiError.class))
-            )
-    })
     @PostMapping("/transfer")
     public ResponseEntity<Void> internalTransfer(
             @Parameter(hidden = true)
@@ -153,34 +95,15 @@ public class CardController {
             summary = "Block a card",
             description = "Blocks a specific card of the authenticated user."
     )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Card blocked successfully",
-                    content = @Content(schema = @Schema(implementation = CardDTO.class))),
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "Unauthorized",
-                    content = @Content(schema = @Schema(implementation = ApiError.class))
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Card not found",
-                    content = @Content(schema = @Schema(implementation = ApiError.class))
-            ),
-            @ApiResponse(
-                    responseCode = "409",
-                    description = "Access conflict",
-                    content = @Content(schema = @Schema(implementation = ApiError.class))
-            )
-    })
     @PostMapping("/{cardId}/block")
-    public CardDTO blockCard(
+    public ApiResponse<CardDTO> blockCard(
             @Parameter(hidden = true)
             @AuthenticationPrincipal UserDetailsImpl userDetailsImpl,
             @Parameter(description = "Card UUID", required = true)
             @PathVariable UUID cardId
     ) {
-        return userCardService.blockCard(userDetailsImpl.getId(), cardId);
+        return ApiResponse.<CardDTO>builder()
+                .responseData(userCardService.blockCard(userDetailsImpl.getId(), cardId))
+                .build();
     }
 }

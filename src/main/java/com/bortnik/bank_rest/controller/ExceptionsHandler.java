@@ -1,6 +1,7 @@
 package com.bortnik.bank_rest.controller;
 
 import com.bortnik.bank_rest.dto.ApiError;
+import com.bortnik.bank_rest.dto.ApiResponse;
 import com.bortnik.bank_rest.exception.BadCredentials;
 import com.bortnik.bank_rest.exception.BadRequest;
 import com.bortnik.bank_rest.exception.card.*;
@@ -21,7 +22,7 @@ import java.time.LocalDateTime;
 public class ExceptionsHandler {
 
     @ExceptionHandler(AccessError.class)
-    ResponseEntity<ApiError> handleAccessError(AccessError accessError) {
+    ResponseEntity<ApiResponse<ApiError>> handleAccessError(AccessError accessError) {
         return buildResponseEntity(
                 "Access Error",
                 accessError.getMessage(),
@@ -30,7 +31,7 @@ public class ExceptionsHandler {
     }
 
     @ExceptionHandler(CardNotFound.class)
-    ResponseEntity<ApiError> handleCardNotFound(CardNotFound cardNotFound) {
+    ResponseEntity<ApiResponse<ApiError>> handleCardNotFound(CardNotFound cardNotFound) {
         return buildResponseEntity(
                 "Card Not Found",
                 cardNotFound.getMessage(),
@@ -39,7 +40,7 @@ public class ExceptionsHandler {
     }
 
     @ExceptionHandler(InsufficientFunds.class)
-    ResponseEntity<ApiError> handleInsufficientFunds(InsufficientFunds insufficientFunds) {
+    ResponseEntity<ApiResponse<ApiError>> handleInsufficientFunds(InsufficientFunds insufficientFunds) {
         return buildResponseEntity(
                 "Insufficient Funds",
                 insufficientFunds.getMessage(),
@@ -48,7 +49,7 @@ public class ExceptionsHandler {
     }
 
     @ExceptionHandler(UserAlreadyExists.class)
-    ResponseEntity<ApiError> handleUserAlreadyExists(UserAlreadyExists userAlreadyExists) {
+    ResponseEntity<ApiResponse<ApiError>> handleUserAlreadyExists(UserAlreadyExists userAlreadyExists) {
         return buildResponseEntity(
                 "User Already Exists",
                 userAlreadyExists.getMessage(),
@@ -57,7 +58,7 @@ public class ExceptionsHandler {
     }
 
     @ExceptionHandler(UserNotFound.class)
-    ResponseEntity<ApiError> handleUserNotFound(UserNotFound userNotFound) {
+    ResponseEntity<ApiResponse<ApiError>> handleUserNotFound(UserNotFound userNotFound) {
         return buildResponseEntity(
                 "User Not Found",
                 userNotFound.getMessage(),
@@ -66,7 +67,7 @@ public class ExceptionsHandler {
     }
 
     @ExceptionHandler(BadRequest.class)
-    ResponseEntity<ApiError> handleBadRequest(BadRequest badRequestException) {
+    ResponseEntity<ApiResponse<ApiError>> handleBadRequest(BadRequest badRequestException) {
         return buildResponseEntity(
                 "Bad Request",
                 badRequestException.getMessage(),
@@ -75,7 +76,7 @@ public class ExceptionsHandler {
     }
 
     @ExceptionHandler(CardBlocked.class)
-    ResponseEntity<ApiError> handleCardBlocked(CardBlocked cardBlocked) {
+    ResponseEntity<ApiResponse<ApiError>> handleCardBlocked(CardBlocked cardBlocked) {
         return buildResponseEntity(
                 "Card Blocked",
                 cardBlocked.getMessage(),
@@ -84,7 +85,7 @@ public class ExceptionsHandler {
     }
 
     @ExceptionHandler(CardExpired.class)
-    ResponseEntity<ApiError> handleCardExpired(CardExpired cardExpired) {
+    ResponseEntity<ApiResponse<ApiError>> handleCardExpired(CardExpired cardExpired) {
         return buildResponseEntity(
                 "Card Expired",
                 cardExpired.getMessage(),
@@ -93,7 +94,7 @@ public class ExceptionsHandler {
     }
 
     @ExceptionHandler(CardsAreTheSame.class)
-    ResponseEntity<ApiError> handleCardsAreTheSame(CardsAreTheSame cardsAreTheSame) {
+    ResponseEntity<ApiResponse<ApiError>> handleCardsAreTheSame(CardsAreTheSame cardsAreTheSame) {
         return buildResponseEntity(
                 "Card Are The Same",
                 cardsAreTheSame.getMessage(),
@@ -102,7 +103,7 @@ public class ExceptionsHandler {
     }
 
     @ExceptionHandler(IncorrectAmount.class)
-    ResponseEntity<ApiError> handleIncorrectAmount(IncorrectAmount incorrectAmount) {
+    ResponseEntity<ApiResponse<ApiError>> handleIncorrectAmount(IncorrectAmount incorrectAmount) {
         return buildResponseEntity(
                 "Card Are The Same",
                 incorrectAmount.getMessage(),
@@ -111,7 +112,7 @@ public class ExceptionsHandler {
     }
 
     @ExceptionHandler(CardAlreadyActivated.class)
-    ResponseEntity<ApiError> handleCardAlreadyActivated(CardAlreadyActivated cardAlreadyActivated) {
+    ResponseEntity<ApiResponse<ApiError>> handleCardAlreadyActivated(CardAlreadyActivated cardAlreadyActivated) {
         return buildResponseEntity(
                 "Card Already Activated",
                 cardAlreadyActivated.getMessage(),
@@ -120,7 +121,7 @@ public class ExceptionsHandler {
     }
 
     @ExceptionHandler(CardAlreadyBlocked.class)
-    ResponseEntity<ApiError> handleCardAlreadyActivated(CardAlreadyBlocked cardAlreadyBlocked) {
+    ResponseEntity<ApiResponse<ApiError>> handleCardAlreadyActivated(CardAlreadyBlocked cardAlreadyBlocked) {
         return buildResponseEntity(
                 "Card Already Blocked",
                 cardAlreadyBlocked.getMessage(),
@@ -129,7 +130,7 @@ public class ExceptionsHandler {
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    ResponseEntity<ApiError> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException exception) {
+    ResponseEntity<ApiResponse<ApiError>> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException exception) {
         return buildResponseEntity(
                 "Bad Request",
                 "Invalid parameter: " + exception.getName(),
@@ -138,7 +139,7 @@ public class ExceptionsHandler {
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
-    ResponseEntity<ApiError> handleNoResourceFoundException(NoResourceFoundException exception) {
+    ResponseEntity<ApiResponse<ApiError>> handleNoResourceFoundException(NoResourceFoundException exception) {
         return buildResponseEntity(
                 "Resource Not Found",
                 exception.getMessage(),
@@ -147,7 +148,7 @@ public class ExceptionsHandler {
     }
 
     @ExceptionHandler(BadCredentials.class)
-    ResponseEntity<ApiError> handleBadCredentials(BadCredentials badCredentials) {
+    ResponseEntity<ApiResponse<ApiError>> handleBadCredentials(BadCredentials badCredentials) {
         return buildResponseEntity(
                 "Bad Credentials",
                 badCredentials.getMessage(),
@@ -156,7 +157,7 @@ public class ExceptionsHandler {
     }
 
     @ExceptionHandler(BadCredentialsException.class)
-    ResponseEntity<ApiError> handleBadCredentialsException(BadCredentialsException exception) {
+    ResponseEntity<ApiResponse<ApiError>> handleBadCredentialsException(BadCredentialsException exception) {
         return buildResponseEntity(
                 "Bad Credentials",
                 exception.getMessage(),
@@ -165,7 +166,7 @@ public class ExceptionsHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    ResponseEntity<ApiError> handleGenericException(Exception exception) {
+    ResponseEntity<ApiResponse<ApiError>> handleGenericException(Exception exception) {
         return buildResponseEntity(
                 "Internal Server Error",
                 exception.getMessage(),
@@ -173,7 +174,7 @@ public class ExceptionsHandler {
         );
     }
 
-    private ResponseEntity<ApiError> buildResponseEntity(
+    private ResponseEntity<ApiResponse<ApiError>> buildResponseEntity(
             final String error,
             final String message,
             final HttpStatus status
@@ -184,6 +185,12 @@ public class ExceptionsHandler {
                 .message(message)
                 .status(status)
                 .build();
-        return ResponseEntity.status(apiError.getStatus()).body(apiError);
+
+        return ResponseEntity.status(apiError.getStatus()).body(
+                ApiResponse.<ApiError>builder()
+                        .success(false)
+                        .apiError(apiError)
+                        .build()
+        );
     }
 }

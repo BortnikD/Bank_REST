@@ -1,6 +1,7 @@
 package com.bortnik.bank_rest.security.jwt;
 
 import com.bortnik.bank_rest.dto.ApiError;
+import com.bortnik.bank_rest.dto.ApiResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -36,7 +37,12 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
                 .message(accessDeniedException.getMessage())
                 .build();
 
-        response.getWriter().write(objectMapper.writeValueAsString(apiError));
+        response.getWriter().write(objectMapper.writeValueAsString(
+                ApiResponse.<ApiError>builder()
+                    .success(false)
+                    .apiError(apiError)
+                    .build()
+        ));
         response.getWriter().flush();
     }
 }
