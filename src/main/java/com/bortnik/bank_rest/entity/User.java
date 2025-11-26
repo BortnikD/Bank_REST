@@ -1,10 +1,7 @@
 package com.bortnik.bank_rest.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
@@ -15,7 +12,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Data
+@Getter
 public class User {
 
     @Id
@@ -24,6 +21,7 @@ public class User {
 
     @Column
     @Enumerated(EnumType.STRING)
+    @Setter
     Role role;
 
     @Column
@@ -37,5 +35,6 @@ public class User {
     LocalDateTime createdAt;
 
     @Column(name = "updated_at")
+    @Setter
     LocalDateTime updatedAt;
 }

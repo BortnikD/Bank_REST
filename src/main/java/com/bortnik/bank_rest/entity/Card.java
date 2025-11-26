@@ -1,10 +1,7 @@
 package com.bortnik.bank_rest.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
@@ -16,7 +13,7 @@ import java.util.UUID;
 @Table(name = "cards")
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
+@Getter
 @Builder
 public class Card {
 
@@ -32,6 +29,7 @@ public class Card {
 
     @Column
     @Enumerated(EnumType.STRING)
+    @Setter
     CardStatus status;
 
     @Column(name = "card_number")
@@ -41,6 +39,7 @@ public class Card {
     String lastFourDigits;
 
     @Column
+    @Setter
     BigDecimal balance;
 
     @CreationTimestamp
@@ -48,5 +47,6 @@ public class Card {
     LocalDateTime createdAt;
 
     @Column(name = "updated_at")
+    @Setter
     LocalDateTime updatedAt;
 }
